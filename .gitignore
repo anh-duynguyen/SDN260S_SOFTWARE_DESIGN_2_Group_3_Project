@@ -1,1 +1,29 @@
 /SDN260S_SOFTWARE_DESIGN_2_Group_3_Project/nbproject/private/
+/SDN260S_SOFTWARE_DESIGN_2_Group_3_Project/nbproject/private/
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+
+# Compiled Java files
+*.class
+
+# Build output
+out/
+target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
