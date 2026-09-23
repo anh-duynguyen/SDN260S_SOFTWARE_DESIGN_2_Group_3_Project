@@ -117,7 +117,7 @@ public class IndividualMarksManager {
         missing += "-Exam.\n";
     }
     if (missing.isEmpty()) {
-        missing = "No marks are missing.";
+       return "No marks are missing.";
     }
     return "missing marks:\n" + missing;
 }
@@ -146,9 +146,23 @@ public class IndividualMarksManager {
         this.examMark = examMark;
     }
 
+    public Double getTestMark() {
+        return testMark;
+    }
+    
+    public Double getPracticalMark() {
+        return practicalMark;
+    }
+    
+    public Double getExamMark() {
+        return examMark;
+    }
+
     private boolean isValidMark(double mark) {
         //checks if the mark is between 0 and 100
         return mark >= 0 && mark <= 100;
     }
     
+ 
+
 }
