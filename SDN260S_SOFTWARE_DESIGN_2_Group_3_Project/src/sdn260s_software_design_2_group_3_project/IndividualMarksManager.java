@@ -12,7 +12,7 @@ public class IndividualMarksManager {
     private Double practicalMark;
     private Double examMark;
 
-    //constructor to create the object with marks already provided in the csv file
+    //constructor to create the object with marks already provided
     public IndividualMarksManager(Double testMark, Double practicalMark, Double examMark) {
     //checks if mark is valid, if not throws an exception
         if (testMark != null && !isValidMark(testMark)) {
@@ -103,25 +103,32 @@ public class IndividualMarksManager {
         
     }
 
-public String getMissingMarks(){
+    public String getMissingMarks(){
     //store a message indicating which marks are missing
-    String missing = "missing marks: ";
+    String missing = "";
     //finds out which marks are missing and returns a message indicating which ones are missing
     if(testMark == null){
-        missing += "\n-Test.";
+        missing += "-Test.\n";
     }
     if(practicalMark == null){
-        missing += "\n-Practical.";
+        missing += "-Practical.\n";
     }
     if(examMark == null){
-        missing += "\n-Exam.";
+        missing += "-Exam.\n";
     }
     if (missing.isEmpty()) {
         missing = "No marks are missing.";
     }
-    return missing;
+    return "missing marks:\n" + missing;
 }
 
+    public void setExamMark(Double examMark) {
+        //checks if the mark is valid, if not throws an exception
+        if (examMark != null && !isValidMark(examMark)) {
+            throw new IllegalArgumentException("Invalid exam mark. Please enter a mark between 0 and 100.");
+        }
+        this.examMark = examMark;
+    }
 
     private boolean isValidMark(double mark) {
         //checks if the mark is between 0 and 100
