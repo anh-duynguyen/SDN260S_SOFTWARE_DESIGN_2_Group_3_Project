@@ -122,6 +122,22 @@ public class IndividualMarksManager {
     return "missing marks:\n" + missing;
 }
 
+    public void setTestMark(Double testMark) {
+        //checks if the mark is valid, if not throws an exception
+        if (testMark != null && !isValidMark(testMark)) {
+            throw new IllegalArgumentException("Invalid test mark. Please enter a mark between 0 and 100.");
+        }
+        this.testMark = testMark;
+    }
+
+    public void setPracticalMark(Double practicalMark){
+          //checks if the mark is valid, if not throws an exception
+        if (practicalMark != null && !isValidMark(practicalMark)) {
+            throw new IllegalArgumentException("Invalid practical mark. Please enter a mark between 0 and 100.");
+        }
+        this.practicalMark = practicalMark;
+    }
+    
     public void setExamMark(Double examMark) {
         //checks if the mark is valid, if not throws an exception
         if (examMark != null && !isValidMark(examMark)) {
