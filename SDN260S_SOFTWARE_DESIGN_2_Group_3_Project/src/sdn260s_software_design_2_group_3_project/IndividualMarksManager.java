@@ -7,21 +7,21 @@ public class IndividualMarksManager {
     private double practicalWeight = 0.30;
     private double examWeight = 0.50;
     
-    //student marks
-    private double testMark;
-    private double practicalMark;
-    private double examMark;
+    //student marks... Double can hold null and double cannot, so we use Double to allow for null values
+    private Double testMark;
+    private Double practicalMark;
+    private Double examMark;
 
     //constructor to create the object with marks already provided in the csv file
-    public IndividualMarksManager(double testMark, double practicalMark, double examMark) {
-    //checks if test mark is valid, if not throws an exception
-        if (!isValidMark(testMark)) {
+    public IndividualMarksManager(Double testMark, Double practicalMark, Double examMark) {
+    //checks if mark is valid, if not throws an exception
+        if (testMark != null && !isValidMark(testMark)) {
             throw new IllegalArgumentException("Invalid test mark. Please enter a mark between 0 and 100.");
         }
-        if (!isValidMark(practicalMark)) {
+        if (practicalMark != null && !isValidMark(practicalMark)) {
             throw new IllegalArgumentException("Invalid practical mark. Please enter a mark between 0 and 100.");
         }
-        if (!isValidMark(examMark)) {
+        if (examMark != null && !isValidMark(examMark)) {
             throw new IllegalArgumentException("Invalid exam mark. Please enter a mark between 0 and 100.");
         }
 
@@ -32,6 +32,11 @@ public class IndividualMarksManager {
     }
 
     public double calculateFinalMark() {
+        if (hasMissingMarks()) {
+            //throws an exception if any of the marks are missing
+            throw new IllegalStateException("Cannot calculate final mark because there are missing values.");
+        }
+
         //calculates the contribution of each mark to the final mark
         double testContribution = testMark * testWeight;
         double practicalContribution = practicalMark * practicalWeight;
@@ -42,6 +47,10 @@ public class IndividualMarksManager {
     }
 
     public double calculateAverage(){
+        if (hasMissingMarks()) {
+            //throws an exception if any of the marks are missing
+            throw new IllegalStateException("Cannot calculate average mark because there are missing values.");
+        }
         //adds all marks together to get the total
         double total = testMark + practicalMark + examMark;
         double average = total / 3; 
@@ -49,6 +58,10 @@ public class IndividualMarksManager {
     }
     
     public double getHighestMark() {
+        if (hasMissingMarks()) {
+            //throws an exception if any of the marks are missing
+            throw new IllegalStateException("Cannot calculate highest mark because there are missing values.");
+        }
         //finds the highest mark among the three
         double highest = testMark; // assume testMark is the highest initially
         if (practicalMark > highest) {
@@ -61,6 +74,10 @@ public class IndividualMarksManager {
     }
 
     public double getLowestMark() {
+        if (hasMissingMarks()) {
+            //throws an exception if any of the marks are missing
+            throw new IllegalStateException("Cannot calculate lowest mark because there are missing values.");
+        }
         double lowest = testMark; // assume testMark is the lowest initially
         if (practicalMark < lowest) {
             lowest = practicalMark;
@@ -70,6 +87,41 @@ public class IndividualMarksManager {
         }
         return lowest;
     }
+
+    public boolean hasMissingMarks() {
+        //checks if any of the marks are null
+        if (testMark == null){
+            return true;
+        }
+        if (practicalMark == null){
+            return true;
+        }
+        if (examMark == null){
+            return true;
+        } 
+            return false;
+        
+    }
+
+public String getMissingMarks(){
+    //store a message indicating which marks are missing
+    String missing = "missing marks: ";
+    //finds out which marks are missing and returns a message indicating which ones are missing
+    if(testMark == null){
+        missing += "\n-Test.";
+    }
+    if(practicalMark == null){
+        missing += "\n-Practical.";
+    }
+    if(examMark == null){
+        missing += "\n-Exam.";
+    }
+    if (missing.isEmpty()) {
+        missing = "No marks are missing.";
+    }
+    return missing;
+}
+
 
     private boolean isValidMark(double mark) {
         //checks if the mark is between 0 and 100
