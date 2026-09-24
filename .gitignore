@@ -1,20 +1,12 @@
-/SDN260S_SOFTWARE_DESIGN_2_Group_3_Project/nbproject/private/
-/SDN260S_SOFTWARE_DESIGN_2_Group_3_Project/nbproject/private/
-# NetBeans
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
+# NetBeans (Ant project)
+**/nbproject/private/
+**/build/
+**/dist/
+nbbuild/
+nbdist/
 
-# Compiled Java files
+# Compiled Java classes
 *.class
-
-# Build output
-out/
-target/
 
 # IDE files
 .idea/
