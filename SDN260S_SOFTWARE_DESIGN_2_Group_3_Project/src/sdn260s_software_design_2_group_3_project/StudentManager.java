@@ -1,0 +1,22 @@
+package sdn260s_software_design_2_group_3_project;
+import java.util.ArrayList;
+
+public class StudentManager {
+    // Stores all students in the system
+    private ArrayList<Student> students;
+
+    public StudentManager() {
+        // Create an empty list ready to store students
+        this.students = new ArrayList<>();
+    }
+
+    public void addStudent(Student student) {
+        // Add the student to the list
+        this.students.add(student);
+    }
+
+    public ArrayList<Student> getStudents() {
+        // Return the list of students
+        return this.students;
+    }
+}
