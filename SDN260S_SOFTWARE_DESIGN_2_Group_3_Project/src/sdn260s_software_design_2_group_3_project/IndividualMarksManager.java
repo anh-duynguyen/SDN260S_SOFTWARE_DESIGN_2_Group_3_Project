@@ -1,19 +1,20 @@
 
 package sdn260s_software_design_2_group_3_project;
 
-public class IndividualMarksManager {
-    //Temporary weights - to be confirmed with the group 
-    private double testWeight = 0.20;
-    private double practicalWeight = 0.30;
-    private double examWeight = 0.50;
-    
+public class IndividualMarksManager { 
     //student marks... Double can hold null and double cannot, so we use Double to allow for null values
     private Double testMark;
     private Double practicalMark;
     private Double examMark;
+    private AssesmentComponent test;
+    private AssesmentComponent practical;
+    private AssesmentComponent exam;
 
     //constructor to create the object with marks already provided
-    public IndividualMarksManager(Double testMark, Double practicalMark, Double examMark) {
+    public IndividualMarksManager(Double testMark, Double practicalMark, Double examMark, AssesmentComponent test, AssesmentComponent practical, AssesmentComponent exam) {
+        this.test = test;
+        this.practical = practical;
+        this.exam = exam;
     //checks if mark is valid, if not throws an exception
         if (testMark != null && !isValidMark(testMark)) {
             throw new IllegalArgumentException("Invalid test mark. Please enter a mark between 0 and 100.");
@@ -38,9 +39,9 @@ public class IndividualMarksManager {
         }
 
         //calculates the contribution of each mark to the final mark
-        double testContribution = testMark * testWeight;
-        double practicalContribution = practicalMark * practicalWeight;
-        double examContribution = examMark * examWeight;
+        double testContribution = testMark * test.getWeight();
+        double practicalContribution = practicalMark * practical.getWeight();
+        double examContribution = examMark * exam.getWeight();
         //calculates the final mark by summing the contributions
         double finalMark = testContribution + practicalContribution + examContribution;
         return finalMark;   
