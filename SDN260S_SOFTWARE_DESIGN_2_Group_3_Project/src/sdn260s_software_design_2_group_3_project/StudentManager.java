@@ -19,4 +19,16 @@ public class StudentManager {
         // Return the list of students
         return this.students;
     }
+
+public Student findStudentByID(String studentID) {
+        // Search for a student by their ID
+        for (Student student : students) {
+            if (student.getStudentID().equals(studentID)) {
+                return student;
+            }
+        }
+        // Return null if no student is found with the given ID
+        return null;
+    }
+
 }
