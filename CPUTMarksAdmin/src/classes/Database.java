@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package main;
+package classes;
 
 /**
  *
@@ -116,9 +112,9 @@ if (parent != null) {
         , and rebuilds a StudentManager object populated by them.
         Three AssessComp objects are passed for every 
         Student/IMM for them to know the weight, of tests, pracs and exam comps.*/
-        public StudentManager loadData(AssesmentComponent test, 
-                AssesmentComponent prac,
-                AssesmentComponent exam) throws IOException{
+        public StudentManager loadData(AssessmentComponent test, 
+                AssessmentComponent prac,
+                AssessmentComponent exam) throws IOException{
             StudentManager studentManager = new StudentManager();
             if(!Files.exists(Paths.get(fileName))){
                 return studentManager; //no file saved yet so an empty manager is returned

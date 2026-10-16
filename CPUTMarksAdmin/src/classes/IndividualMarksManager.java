@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package main;
+package classes;
 
 /**
  *
@@ -13,12 +9,12 @@ public class IndividualMarksManager {
     private Double testMark;
     private Double practicalMark;
     private Double examMark;
-    private AssesmentComponent test;
-    private AssesmentComponent practical;
-    private AssesmentComponent exam;
+    private AssessmentComponent test;
+    private AssessmentComponent practical;
+    private AssessmentComponent exam;
 
     //constructor to create the object with marks already provided
-    public IndividualMarksManager(Double testMark, Double practicalMark, Double examMark, AssesmentComponent test, AssesmentComponent practical, AssesmentComponent exam) {
+    public IndividualMarksManager(Double testMark, Double practicalMark, Double examMark, AssessmentComponent test, AssessmentComponent practical, AssessmentComponent exam) {
         this.test = test;
         this.practical = practical;
         this.exam = exam;
