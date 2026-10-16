@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package classes;
 
 /**
@@ -5,8 +9,8 @@ package classes;
  * @author User
  */
 import java.io.*;
-import java.util.*;
 import java.nio.file.*;
+import java.util.*;
 
 /*Database.java will be responsible for interacting with the data.csv file.
 It will be responsible for loading, saving, exporting and importing files.*/
@@ -14,6 +18,7 @@ It will be responsible for loading, saving, exporting and importing files.*/
 public class Database{
     
     private String  fileName; //file in which data will be stored
+    //private String  pathName;
     
     public Database(String fileName){
         this.fileName = fileName; //file to be instantiated
@@ -145,4 +150,126 @@ if (parent != null) {
             }
             return studentManager;
         }
+        
+        /*
+        importCSV and exportCSV will be similar to the saveData and loadData
+        functions, except they are built with the intention of having them interact
+        with external files. They are there to handle files that the lecturers did not create
+        inside the application. Because of this is best to assume that the layout of CSV files
+        wont be the same as what is determined by saveData and loadData. 
+        importCSV is meant to provide a path for when this occurs.
+        it is meant to work around files that do not have the same structure and order of what is made 
+        by the application.
+        */
+        
+        public StudentManager importCSV(Path path, 
+                AssessmentComponent test, 
+                AssessmentComponent practical, 
+                AssessmentComponent exam) throws IOException{
+            
+            StudentManager stm = new StudentManager();
+            //empty manager
+            
+            if(!Files.exists(path)){
+                return stm; //nothing to import
+            }
+            
+            List <String> lines = Files.readAllLines(path);
+            if(lines.isEmpty()){
+                return stm;//lines empty
+            }
+            
+            //the headerfields need to be scanned to find which collumns are present, 
+            //and which ones are missing
+             String[] hField = splitCSV(lines.get(0));
+             Map<String, Integer> column_idx = new HashMap<>();
+             
+             for(int i = 0; i < hField.length; i++){
+                 //for every single field, the name in the cell is trimmed and put into lowercase
+                 //it is then put into the column index map 
+                 String polishedName = hField[i].trim().toLowerCase();
+                 column_idx.put(polishedName, i);
+             } 
+             
+             //in order to keep the lecturers behaving with their files, they need to have required headers for their 
+             //csv files, this restricts what the headers are allowed to be
+             //if headers are not properly named, an error is thrown
+         String[] requiredHeaders = {"studentid", "t1", "name", "practical", "fisa"};
+         for (String header : requiredHeaders) {
+             if (!column_idx.containsKey(header)) {
+                 throw new IOException("Required CSV header not found: " + header);
+             }
+         }
+
+         //every single header name in lowercase has their index number assigned to an integer
+         int IDCol = column_idx.get("studentid");
+         int testCol = column_idx.get("t1");
+         int nameCol = column_idx.get("name");
+         int pracCol = column_idx.get("practical");
+         int examCol = column_idx.get("fisa");
+         
+         //for loop retrieves every parameter (id, mark, name), creates a student object 
+         //with name and adds that object to a manager which is returned.
+         //it will do this for every student inside the csv and their data
+         for(int i = 1; i < lines.size(); i++){
+             String line = lines.get(i);
+             
+             if(line.isBlank()){
+                 continue;
+             }
+             
+             String[] fields = splitCSV(line);//cells of csv file
+             
+             String studentID = fields[IDCol];
+             String name = fields[nameCol];
+             Double tMark = stringToMark(fields[testCol]);
+             Double pMark = stringToMark(fields[pracCol]);
+             Double eMark = stringToMark(fields[examCol]);
+             
+             Student student = new Student(name, studentID, tMark, pMark, eMark,
+             test, practical, exam);
+             stm.addStudent(student);
+         }
+         return stm;
+}
+        /*exportCSV function copies what is in the 
+        application to a location that the lecturer
+        picks*/
+        public void exportCSV(Path path, StudentManager stm){
+            
+            List<String> lines = new ArrayList<>();
+            lines.add("StudentID, Name, T1, Practical, FISA");
+            
+            for(Student student: stm.getStudents()){
+                IndividualMarksManager marks = student.getMarks();
+                
+                if(marks.hasMissingMarks()){
+                    String finalMarkText = "N/A";
+                }else{
+                    String finalMarkText = String.valueOf(marks.calculateFinalMark());
+                    
+                }
+                //String row joins student information and marks into a single row entry
+            String row;
+            row = String.join(",",
+                    escapeCSV(student.getStudentID()),
+                    escapeCSV(student.getName()),
+                    markToString(marks.getTestMark()),
+                    markToString(marks.getPracticalMark()),
+                    markToString(marks.getExamMark())
+            );
+            lines.add(row);//adds row to file
+            }
+            
+            try {
+            //exception to be declared in case of failure
+            Path parent = path.getParent();
+if (parent != null) {
+    Files.createDirectories(parent);
+}
+            Files.write(path, lines);
+        } catch (IOException ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+ }
 }
