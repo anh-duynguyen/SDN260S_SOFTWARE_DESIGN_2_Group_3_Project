@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package main;
+package classes;
 
 /**
  *
@@ -14,7 +14,7 @@ public class Student {
     private String studentID;
     private IndividualMarksManager marks;
     
-    public Student(String name, String studentID, Double testMark, Double practicalMark, Double examMark, AssesmentComponent test, AssesmentComponent practical, AssesmentComponent exam) {
+    public Student(String name, String studentID, Double testMark, Double practicalMark, Double examMark, AssessmentComponent test, AssessmentComponent practical, AssessmentComponent exam) {
         this.name = name;
         this.studentID = studentID;
         this.marks = new IndividualMarksManager(testMark, practicalMark, examMark, test, practical, exam);
