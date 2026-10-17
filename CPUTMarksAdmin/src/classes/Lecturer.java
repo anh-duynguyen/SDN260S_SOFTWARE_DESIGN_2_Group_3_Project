@@ -13,7 +13,7 @@ public class Lecturer extends User {
     private final Course module;
     private final StudentManager studentManager;
 
-    public Lecturer(String name, Module module, StudentManager studentManager) {
+    public Lecturer(String name, Course module, StudentManager studentManager) {
         super(name);
         if (module == null || studentManager == null) {
             throw new IllegalArgumentException("Module and StudentManager are required.");
