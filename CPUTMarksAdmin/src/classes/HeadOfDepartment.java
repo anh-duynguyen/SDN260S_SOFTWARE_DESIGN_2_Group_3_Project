@@ -5,14 +5,14 @@ import java.util.ArrayList;
 // Head of Department can only VIEW results, not change any marks.
 public class HeadOfDepartment extends User {
 
-    private final ArrayList<Module> modules;
+    private final ArrayList<Course> modules;
 
     public HeadOfDepartment(String name) {
         this(name, new ArrayList<>());
     }
 
     // modules this HoD looks after
-    public HeadOfDepartment(String name, ArrayList<Module> modules) {
+    public HeadOfDepartment(String name, ArrayList<Course> modules) {
         super(name);
         if (modules == null) {
             this.modules = new ArrayList<>();
@@ -32,7 +32,7 @@ public class HeadOfDepartment extends User {
     }
 
     // ranked results for all students in a module
-    public String viewModuleResults(Module module) {
+    public String viewModuleResults(Course module) {
         requireModule(module);
         CollectiveMarksManager cmm = new CollectiveMarksManager(module.getStudents());
         StringBuilder sb = new StringBuilder();
@@ -56,7 +56,7 @@ public class HeadOfDepartment extends User {
     }
 
     // look at one student's marks
-    public String viewStudentMarks(Module module, String studentID) {
+    public String viewStudentMarks(Course module, String studentID) {
         requireModule(module);
         for (Student s : module.getStudents()) {
             if (s.getStudentID().equals(studentID)) {

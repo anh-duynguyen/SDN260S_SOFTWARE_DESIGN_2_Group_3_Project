@@ -10,7 +10,7 @@ and view a single student's marks. They can't see reports across modules
 (that's for the HeadOfDepartment).*/
 public class Lecturer extends User {
 
-    private final Module module;
+    private final Course module;
     private final StudentManager studentManager;
 
     public Lecturer(String name, Module module, StudentManager studentManager) {
