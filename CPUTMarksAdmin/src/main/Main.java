@@ -118,7 +118,7 @@ public class Main {
                     safeRun("Update Marks", () -> lecturer.updateMarks());
                     break;
                 case 6:
-                    safeRun("Import Class List", () -> lecturer.importMark());
+                    safeRun("Import Class List", () -> lecturer.importMarks());
                     break;
                 case 7:
                     safeRun("Export Class List", () -> database.exportCSV(studentManager));
