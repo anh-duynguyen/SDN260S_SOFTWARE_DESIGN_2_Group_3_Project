@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.Scanner;
 
 // A lecturer can add assessments and students, capture/update/import mark and view a single student's marks.
@@ -33,6 +34,24 @@ import java.util.Scanner;
     // lets Main share its Scanner so two Scanners don't fight over System.in
     public void setInput(Scanner input) {
         this.input = input;
+=======
+
+/* A lecturer can add assessments and students, capture/update/import marks
+and view a single student's marks. They can't see reports across modules
+(that's for the HeadOfDepartment).*/
+public class Lecturer extends User {
+
+    private final Course module;
+    private final StudentManager studentManager;
+
+    public Lecturer(String name, Course module, StudentManager studentManager) {
+        super(name);
+        if (module == null || studentManager == null) {
+            throw new IllegalArgumentException("Module and StudentManager are required.");
+        }
+        this.module = module;
+        this.studentManager = studentManager;
+>>>>>>> origin/main
     }
 
     @Override
@@ -59,7 +78,11 @@ import java.util.Scanner;
 
         // check for duplicates and add up the weights
         double totalWeight = weight;
+<<<<<<< HEAD
         for (AssessmentComponent c : course.getAssessmentComponents()) {
+=======
+        for (AssessmentComponent c : module.getAssessmentComponents()) {
+>>>>>>> origin/main
             if (c.getKey().equalsIgnoreCase(key.trim())) {
                 throw new IllegalArgumentException("Assessment '" + key + "' already exists.");
             }
@@ -69,7 +92,11 @@ import java.util.Scanner;
             throw new IllegalArgumentException(
                     "Total weight would be " + totalWeight + "%. It cannot exceed 100%.");
         }
+<<<<<<< HEAD
         course.addComponent(new AssessmentComponent(key.trim(), label, weight, maxMark));
+=======
+        module.addComponent(new AssessmentComponent(key.trim(), label, weight, maxMark));
+>>>>>>> origin/main
     }
 
     // add a student with no marks yet (all 3 count as missing)
@@ -97,20 +124,29 @@ import java.util.Scanner;
         Double e = null;
         if (testMark != null) 
             t = checkRange("test", testMark);
+<<<<<<< HEAD
         if (practicalMark != null)
+=======
+        if (practicalMark != null) 
+>>>>>>> origin/main
             p = checkRange("practical", practicalMark);
         if (examMark != null) 
             e = checkRange("exam", examMark);
 
         Student s = new Student(studentName.trim(), studentID.trim(), t, p, e, test, practical, exam);
         studentManager.addStudent(s);
+<<<<<<< HEAD
         course.addStudent(s);
+=======
+        module.addStudent(s);
+>>>>>>> origin/main
     }
 
     // capture marks for a student, null means leave that mark as it is
     public void addMarks(String studentID, Double testMark, Double practicalMark, Double examMark) {
         IndividualMarksManager marks = findStudent(studentID).getMarks();
 
+<<<<<<< HEAD
         // check everything before changing anything, so a bad mark
         // doesn't leave the student half updated
         Double t = null;
@@ -119,6 +155,17 @@ import java.util.Scanner;
         if (testMark != null) t = checkRange("test", testMark);
         if (practicalMark != null) p = checkRange("practical", practicalMark);
         if (examMark != null) e = checkRange("exam", examMark);
+=======
+        Double t = null;
+        Double p = null;
+        Double e = null;
+        if (testMark != null) 
+            t = checkRange("test", testMark);
+        if (practicalMark != null) 
+            p = checkRange("practical", practicalMark);
+        if (examMark != null) 
+            e = checkRange("exam", examMark);
+>>>>>>> origin/main
 
         if (t != null) 
             marks.setTestMark(t);
@@ -147,13 +194,25 @@ import java.util.Scanner;
         }
     }
 
+<<<<<<< HEAD
     // Imports students and marks from a CSV file (same format as Database.saveData).
     // If any row is bad nothing gets changed.
+=======
+    /* Imports students and marks from a CSV file (same format as Database.saveData).
+    If any row is bad nothing gets changed. New students are added and
+    existing students get the marks from the file. A blank/NULL mark in
+    the file will not overwrite a mark we already have.
+    Returns how many rows were imported.*/
+>>>>>>> origin/main
     public int importMarks(String filePath) throws IOException {
         if (filePath == null || filePath.trim().isEmpty()) {
             throw new IllegalArgumentException("File path cannot be empty.");
         }
+<<<<<<< HEAD
         if (!Files.exists(Paths.get(filePath.trim()))) {
+=======
+        if (!Files.exists(Paths.get(filePath))) {
+>>>>>>> origin/main
             throw new IOException("File not found: " + filePath);
         }
 
@@ -161,10 +220,16 @@ import java.util.Scanner;
         AssessmentComponent practical = requireComponent("practical");
         AssessmentComponent exam = requireComponent("exam");
 
+<<<<<<< HEAD
         // load the whole file first, nothing is changed until every row is fine
         StudentManager loaded;
         try {
             loaded = new Database(filePath.trim()).loadData(test, practical, exam);
+=======
+        StudentManager loaded;
+        try {
+            loaded = new Database(filePath).loadData(test, practical, exam);
+>>>>>>> origin/main
         } catch (RuntimeException ex) {
             throw new IllegalArgumentException("Import cancelled: a row in the file is invalid ("
                     + ex.getClass().getSimpleName() + ": " + ex.getMessage()
@@ -177,16 +242,28 @@ import java.util.Scanner;
             if (existing == null) {
                 // new student
                 studentManager.addStudent(incoming);
+<<<<<<< HEAD
                 course.addStudent(incoming);
+=======
+                module.addStudent(incoming);
+>>>>>>> origin/main
             } else {
                 // already exists, only copy over the marks that are in the file
                 IndividualMarksManager from = incoming.getMarks();
                 IndividualMarksManager to = existing.getMarks();
+<<<<<<< HEAD
                 if (from.getTestMark() != null)
                     to.setTestMark(from.getTestMark());
                 if (from.getPracticalMark() != null)
                     to.setPracticalMark(from.getPracticalMark());
                 if (from.getExamMark() != null)
+=======
+                if (from.getTestMark() != null) 
+                    to.setTestMark(from.getTestMark());
+                if (from.getPracticalMark() != null) 
+                    to.setPracticalMark(from.getPracticalMark());
+                if (from.getExamMark() != null) 
+>>>>>>> origin/main
                     to.setExamMark(from.getExamMark());
             }
             count++;
@@ -217,6 +294,7 @@ import java.util.Scanner;
         return sb.toString();
     }
 
+<<<<<<< HEAD
     // students in this course who still have missing marks
     public ArrayList<Student> getStudentsWithMissingMarks() {
         CollectiveMarksManager cmm = new CollectiveMarksManager(course.getStudents());
@@ -295,6 +373,15 @@ import java.util.Scanner;
     }
 
     // private methods
+=======
+    // students in this module who still have missing marks
+    public ArrayList<Student> getStudentsWithMissingMarks() {
+        CollectiveMarksManager cmm = new CollectiveMarksManager(module.getStudents());
+        return cmm.getStudentsWithMissingMarks();
+    }
+
+    //Methods only used in this class 
+>>>>>>> origin/main
 
     private Student findStudent(String studentID) {
         Student s = studentManager.findStudentByID(studentID);
@@ -305,12 +392,20 @@ import java.util.Scanner;
     }
 
     private AssessmentComponent requireComponent(String key) {
+<<<<<<< HEAD
         for (AssessmentComponent c : course.getAssessmentComponents()) {
+=======
+        for (AssessmentComponent c : module.getAssessmentComponents()) {
+>>>>>>> origin/main
             if (c.getKey().equalsIgnoreCase(key)) {
                 return c;
             }
         }
+<<<<<<< HEAD
         throw new IllegalStateException("The course needs a '" + key
+=======
+        throw new IllegalStateException("The module needs a '" + key
+>>>>>>> origin/main
                 + "' assessment first. Use addAssessment().");
     }
 
@@ -318,7 +413,11 @@ import java.util.Scanner;
     // IndividualMarksManager only accepts 0-100 so we use whichever max is smaller.
     private double checkRange(String componentKey, double mark) {
         double max = 100.0;
+<<<<<<< HEAD
         for (AssessmentComponent c : course.getAssessmentComponents()) {
+=======
+        for (AssessmentComponent c : module.getAssessmentComponents()) {
+>>>>>>> origin/main
             if (c.getKey().equalsIgnoreCase(componentKey.trim())) {
                 max = Math.min(c.getMaxMark(), 100.0);
                 break;
@@ -331,6 +430,7 @@ import java.util.Scanner;
         return mark;
     }
 
+<<<<<<< HEAD
     // reads a number, throws a readable error if it isn't one
     private double readNumber(String prompt) {
         System.out.print(prompt);
@@ -368,10 +468,16 @@ import java.util.Scanner;
         }
     }
 
+=======
+>>>>>>> origin/main
     private String show(Double mark) {
         if (mark == null) {
             return "missing";
         }
         return String.format("%.1f", mark);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main

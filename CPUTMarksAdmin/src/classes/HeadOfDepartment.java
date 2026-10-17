@@ -1,18 +1,26 @@
 package classes;
 
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.Scanner;
+=======
+>>>>>>> origin/main
 
 // Head of Department can only VIEW results, not change any marks.
 public class HeadOfDepartment extends User {
 
+<<<<<<< HEAD
     private final ArrayList<Course> courses;
     private Scanner input = new Scanner(System.in);
+=======
+    private final ArrayList<Course> modules;
+>>>>>>> origin/main
 
     public HeadOfDepartment(String name) {
         this(name, new ArrayList<>());
     }
 
+<<<<<<< HEAD
     // courses this HoD looks after
     public HeadOfDepartment(String name, ArrayList<Course> courses) {
         super(name);
@@ -28,6 +36,18 @@ public class HeadOfDepartment extends User {
         this.input = input;
     }
 
+=======
+    // modules this HoD looks after
+    public HeadOfDepartment(String name, ArrayList<Course> modules) {
+        super(name);
+        if (modules == null) {
+            this.modules = new ArrayList<>();
+        } else {
+            this.modules = modules;
+        }
+    }
+
+>>>>>>> origin/main
     @Override
     public String getRole() {
         return "Head of Department";
@@ -38,6 +58,7 @@ public class HeadOfDepartment extends User {
         return false;
     }
 
+<<<<<<< HEAD
     // ranked results for all students in a course
     public String viewModuleResults(Course course) {
         requireCourse(course);
@@ -45,12 +66,26 @@ public class HeadOfDepartment extends User {
         StringBuilder sb = new StringBuilder();
         sb.append("Results for ").append(course.getCode()).append(" - ")
           .append(course.getName()).append(System.lineSeparator());
+=======
+    // ranked results for all students in a module
+    public String viewModuleResults(Course module) {
+        requireModule(module);
+        CollectiveMarksManager cmm = new CollectiveMarksManager(module.getStudents());
+        StringBuilder sb = new StringBuilder();
+        sb.append("Results for ").append(module.getCode()).append(" - ")
+          .append(module.getName()).append(System.lineSeparator());
+>>>>>>> origin/main
 
         int rank = 1;
         for (Student s : cmm.getStudentsRankedByMark()) {
             double fin = s.getMarks().calculateFinalMark();
+<<<<<<< HEAD
             sb.append(String.format("%3d. %-25s %-12s %5.1f%% (%s)%n", rank, s.getName(),
                     s.getStudentID(), fin, CollectiveMarksManager.letterGrade(fin)));
+=======
+            sb.append(String.format("%3d. %-25s %-12s %5.1f%% (%s)%n", 
+                    rank, s.getName(), s.getStudentID(), fin, CollectiveMarksManager.letterGrade(fin)));
+>>>>>>> origin/main
             rank++;
         }
 
@@ -63,9 +98,15 @@ public class HeadOfDepartment extends User {
     }
 
     // look at one student's marks
+<<<<<<< HEAD
     public String viewStudentMarks(Course course, String studentID) {
         requireCourse(course);
         for (Student s : course.getStudents()) {
+=======
+    public String viewStudentMarks(Course module, String studentID) {
+        requireModule(module);
+        for (Student s : module.getStudents()) {
+>>>>>>> origin/main
             if (s.getStudentID().equals(studentID)) {
                 IndividualMarksManager m = s.getMarks();
                 if (m.hasMissingMarks()) {
@@ -73,6 +114,7 @@ public class HeadOfDepartment extends User {
                             + CollectiveMarksManager.describeMissing(s) + ")";
                 }
                 double fin = m.calculateFinalMark();
+<<<<<<< HEAD
                 return String.format("%s: %.1f%% (%s)", s.getName(), fin,
                         CollectiveMarksManager.letterGrade(fin));
             }
@@ -131,6 +173,36 @@ public class HeadOfDepartment extends User {
         sb.append(String.format("%-10s %-25s %8s %8s %8s%n",
                 "Code", "Course", "Average", "PassRate", "Missing"));
         for (Course m : courses) {
+=======
+                return String.format("%s: %.1f%% (%s)", 
+                        s.getName(), fin, CollectiveMarksManager.letterGrade(fin));
+            }
+        }
+        throw new IllegalArgumentException("No student " + studentID + " in " + module.getCode());
+    }
+
+    // average, pass rate and grades for one module
+    public String viewClassSummary(Module module) {
+        requireModule(module);
+        CollectiveMarksManager cmm = new CollectiveMarksManager(module.getStudents());
+        return "Summary for " + module.getCode() + System.lineSeparator() + cmm.buildSummary();
+    }
+
+    // overview of the modules this HoD was created with
+    public String viewAllModules() {
+        return viewAllModules(modules);
+    }
+
+    // one line per module so they can be compared
+    public String viewAllModules(ArrayList<Module> modules) {
+        if (modules == null || modules.isEmpty()) {
+            return "No modules available.";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%-10s %-25s %8s %8s %8s%n",
+                "Code", "Module", "Average", "PassRate", "Missing"));
+        for (Module m : modules) {
+>>>>>>> origin/main
             CollectiveMarksManager cmm = new CollectiveMarksManager(m.getStudents());
             sb.append(String.format("%-10s %-25s %7.1f%% %7.1f%% %8d%n", m.getCode(), m.getName(),
                     cmm.calculateClassAverage(), cmm.calculatePassRate(),
@@ -139,6 +211,7 @@ public class HeadOfDepartment extends User {
         return sb.toString();
     }
 
+<<<<<<< HEAD
     // if there is one course use it, otherwise ask which one
     private Course pickCourse() {
         if (courses.isEmpty()) {
@@ -165,3 +238,11 @@ public class HeadOfDepartment extends User {
         }
     }
 }
+=======
+    private void requireModule(Module module) {
+        if (module == null) {
+            throw new IllegalArgumentException("Module cannot be null.");
+        }
+    }
+}
+>>>>>>> origin/main

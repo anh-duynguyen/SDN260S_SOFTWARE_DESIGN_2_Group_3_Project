@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package classes;
 
 /**
@@ -235,16 +231,13 @@ if (parent != null) {
         /*exportCSV function copies what is in the 
         application to a location that the lecturer
         picks*/
-<<<<<<< HEAD
+
         public void exportCSV( StudentManager stm){
             
             Scanner sc = new Scanner(System.in);
             
             System.out.println("Enter a path: ");
             Path path = Paths.get(sc.nextLine());
-=======
-        public void exportCSV(Path path, StudentManager stm){
->>>>>>> origin/main
             
             List<String> lines = new ArrayList<>();
             lines.add("StudentID, Name, T1, Practical, FISA");
@@ -252,16 +245,7 @@ if (parent != null) {
             for(Student student: stm.getStudents()){
                 IndividualMarksManager marks = student.getMarks();
                 
-<<<<<<< HEAD
-               
-=======
-                if(marks.hasMissingMarks()){
-                    String finalMarkText = "N/A";
-                }else{
-                    String finalMarkText = String.valueOf(marks.calculateFinalMark());
-                    
-                }
->>>>>>> origin/main
+
                 //String row joins student information and marks into a single row entry
             String row;
             row = String.join(",",

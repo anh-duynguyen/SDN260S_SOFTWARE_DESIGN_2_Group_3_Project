@@ -17,7 +17,7 @@ public class Main {
 
     private static final Scanner input = new Scanner(System.in);
 
-    private static Modules module;
+    private static Course module;
     private static StudentManager studentManager;
     private static Database database;
     private static Lecturer lecturer;
@@ -55,7 +55,7 @@ public class Main {
 
     private static void setup() {
         try {
-            module = new Modules("SDN260S", "Software Design 2");
+            module = new Course("SDN260S", "Software Design 2");
 
             module.addComponent(new AssessmentComponent("test", "Test", 30, 100));
             module.addComponent(new AssessmentComponent("practical", "Practical", 30, 100));
@@ -74,7 +74,7 @@ public class Main {
             
             lecturer = new Lecturer("Lecturer", module, studentManager, database);
 
-            ArrayList<Modules> modules = new ArrayList<>();
+            ArrayList<Course> modules = new ArrayList<>();
             modules.add(module);
             headOfDepartment = new HeadOfDepartment("Head of Department", modules);
 
