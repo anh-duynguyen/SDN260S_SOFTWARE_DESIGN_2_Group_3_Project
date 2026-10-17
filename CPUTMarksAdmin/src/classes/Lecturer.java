@@ -4,16 +4,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-<<<<<<< HEAD
 import java.util.Scanner;
 
 // A lecturer can add assessments and students, capture/update/import mark and view a single student's marks.
 // Every method checks its input first and throws an exception with a message.
- public class Lecturer extends User {
+public class Lecturer extends User {
 
     private final Course course;
     private final StudentManager studentManager;
-    private final Database database; 
+    private final Database database;
     private Scanner input = new Scanner(System.in);
 
     public Lecturer(String name, Course course, StudentManager studentManager, Database database) {
@@ -34,24 +33,6 @@ import java.util.Scanner;
     // lets Main share its Scanner so two Scanners don't fight over System.in
     public void setInput(Scanner input) {
         this.input = input;
-=======
-
-/* A lecturer can add assessments and students, capture/update/import marks
-and view a single student's marks. They can't see reports across modules
-(that's for the HeadOfDepartment).*/
-public class Lecturer extends User {
-
-    private final Course module;
-    private final StudentManager studentManager;
-
-    public Lecturer(String name, Course module, StudentManager studentManager) {
-        super(name);
-        if (module == null || studentManager == null) {
-            throw new IllegalArgumentException("Module and StudentManager are required.");
-        }
-        this.module = module;
-        this.studentManager = studentManager;
->>>>>>> origin/main
     }
 
     @Override
@@ -78,11 +59,7 @@ public class Lecturer extends User {
 
         // check for duplicates and add up the weights
         double totalWeight = weight;
-<<<<<<< HEAD
         for (AssessmentComponent c : course.getAssessmentComponents()) {
-=======
-        for (AssessmentComponent c : module.getAssessmentComponents()) {
->>>>>>> origin/main
             if (c.getKey().equalsIgnoreCase(key.trim())) {
                 throw new IllegalArgumentException("Assessment '" + key + "' already exists.");
             }
@@ -92,11 +69,7 @@ public class Lecturer extends User {
             throw new IllegalArgumentException(
                     "Total weight would be " + totalWeight + "%. It cannot exceed 100%.");
         }
-<<<<<<< HEAD
         course.addComponent(new AssessmentComponent(key.trim(), label, weight, maxMark));
-=======
-        module.addComponent(new AssessmentComponent(key.trim(), label, weight, maxMark));
->>>>>>> origin/main
     }
 
     // add a student with no marks yet (all 3 count as missing)
@@ -106,7 +79,7 @@ public class Lecturer extends User {
 
     // add a student with the marks we have so far (null = not available yet)
     public void addStudent(String studentID, String studentName,
-                           Double testMark, Double practicalMark, Double examMark) {
+            Double testMark, Double practicalMark, Double examMark) {
         if (studentID == null || studentID.trim().isEmpty()
                 || studentName == null || studentName.trim().isEmpty()) {
             throw new IllegalArgumentException("Student ID and name cannot be empty.");
@@ -122,57 +95,49 @@ public class Lecturer extends User {
         Double t = null;
         Double p = null;
         Double e = null;
-        if (testMark != null) 
+        if (testMark != null) {
             t = checkRange("test", testMark);
-<<<<<<< HEAD
-        if (practicalMark != null)
-=======
-        if (practicalMark != null) 
->>>>>>> origin/main
+        }
+        if (practicalMark != null) {
             p = checkRange("practical", practicalMark);
-        if (examMark != null) 
+        }
+        if (examMark != null) {
             e = checkRange("exam", examMark);
+        }
 
         Student s = new Student(studentName.trim(), studentID.trim(), t, p, e, test, practical, exam);
         studentManager.addStudent(s);
-<<<<<<< HEAD
         course.addStudent(s);
-=======
-        module.addStudent(s);
->>>>>>> origin/main
     }
 
     // capture marks for a student, null means leave that mark as it is
     public void addMarks(String studentID, Double testMark, Double practicalMark, Double examMark) {
         IndividualMarksManager marks = findStudent(studentID).getMarks();
 
-<<<<<<< HEAD
         // check everything before changing anything, so a bad mark
         // doesn't leave the student half updated
         Double t = null;
         Double p = null;
         Double e = null;
-        if (testMark != null) t = checkRange("test", testMark);
-        if (practicalMark != null) p = checkRange("practical", practicalMark);
-        if (examMark != null) e = checkRange("exam", examMark);
-=======
-        Double t = null;
-        Double p = null;
-        Double e = null;
-        if (testMark != null) 
+        if (testMark != null) {
             t = checkRange("test", testMark);
-        if (practicalMark != null) 
+        }
+        if (practicalMark != null) {
             p = checkRange("practical", practicalMark);
-        if (examMark != null) 
+        }
+        if (examMark != null) {
             e = checkRange("exam", examMark);
->>>>>>> origin/main
+        }
 
-        if (t != null) 
+        if (t != null) {
             marks.setTestMark(t);
-        if (p != null) 
+        }
+        if (p != null) {
             marks.setPracticalMark(p);
-        if (e != null) 
+        }
+        if (e != null) {
             marks.setExamMark(e);
+        }
     }
 
     // change one mark (componentKey is test, practical or exam)
@@ -194,25 +159,13 @@ public class Lecturer extends User {
         }
     }
 
-<<<<<<< HEAD
     // Imports students and marks from a CSV file (same format as Database.saveData).
     // If any row is bad nothing gets changed.
-=======
-    /* Imports students and marks from a CSV file (same format as Database.saveData).
-    If any row is bad nothing gets changed. New students are added and
-    existing students get the marks from the file. A blank/NULL mark in
-    the file will not overwrite a mark we already have.
-    Returns how many rows were imported.*/
->>>>>>> origin/main
     public int importMarks(String filePath) throws IOException {
         if (filePath == null || filePath.trim().isEmpty()) {
             throw new IllegalArgumentException("File path cannot be empty.");
         }
-<<<<<<< HEAD
         if (!Files.exists(Paths.get(filePath.trim()))) {
-=======
-        if (!Files.exists(Paths.get(filePath))) {
->>>>>>> origin/main
             throw new IOException("File not found: " + filePath);
         }
 
@@ -220,16 +173,10 @@ public class Lecturer extends User {
         AssessmentComponent practical = requireComponent("practical");
         AssessmentComponent exam = requireComponent("exam");
 
-<<<<<<< HEAD
         // load the whole file first, nothing is changed until every row is fine
         StudentManager loaded;
         try {
             loaded = new Database(filePath.trim()).loadData(test, practical, exam);
-=======
-        StudentManager loaded;
-        try {
-            loaded = new Database(filePath).loadData(test, practical, exam);
->>>>>>> origin/main
         } catch (RuntimeException ex) {
             throw new IllegalArgumentException("Import cancelled: a row in the file is invalid ("
                     + ex.getClass().getSimpleName() + ": " + ex.getMessage()
@@ -242,29 +189,20 @@ public class Lecturer extends User {
             if (existing == null) {
                 // new student
                 studentManager.addStudent(incoming);
-<<<<<<< HEAD
                 course.addStudent(incoming);
-=======
-                module.addStudent(incoming);
->>>>>>> origin/main
             } else {
                 // already exists, only copy over the marks that are in the file
                 IndividualMarksManager from = incoming.getMarks();
                 IndividualMarksManager to = existing.getMarks();
-<<<<<<< HEAD
-                if (from.getTestMark() != null)
+                if (from.getTestMark() != null) {
                     to.setTestMark(from.getTestMark());
-                if (from.getPracticalMark() != null)
+                }
+                if (from.getPracticalMark() != null) {
                     to.setPracticalMark(from.getPracticalMark());
-                if (from.getExamMark() != null)
-=======
-                if (from.getTestMark() != null) 
-                    to.setTestMark(from.getTestMark());
-                if (from.getPracticalMark() != null) 
-                    to.setPracticalMark(from.getPracticalMark());
-                if (from.getExamMark() != null) 
->>>>>>> origin/main
+                }
+                if (from.getExamMark() != null) {
                     to.setExamMark(from.getExamMark());
+                }
             }
             count++;
         }
@@ -285,7 +223,7 @@ public class Lecturer extends User {
 
         if (m.hasMissingMarks()) {
             sb.append("  Final:     incomplete - missing: ")
-              .append(CollectiveMarksManager.describeMissing(s));
+                    .append(CollectiveMarksManager.describeMissing(s));
         } else {
             double fin = m.calculateFinalMark();
             sb.append(String.format("  Final:     %.1f%% (%s)", fin,
@@ -294,7 +232,6 @@ public class Lecturer extends User {
         return sb.toString();
     }
 
-<<<<<<< HEAD
     // students in this course who still have missing marks
     public ArrayList<Student> getStudentsWithMissingMarks() {
         CollectiveMarksManager cmm = new CollectiveMarksManager(course.getStudents());
@@ -373,16 +310,6 @@ public class Lecturer extends User {
     }
 
     // private methods
-=======
-    // students in this module who still have missing marks
-    public ArrayList<Student> getStudentsWithMissingMarks() {
-        CollectiveMarksManager cmm = new CollectiveMarksManager(module.getStudents());
-        return cmm.getStudentsWithMissingMarks();
-    }
-
-    //Methods only used in this class 
->>>>>>> origin/main
-
     private Student findStudent(String studentID) {
         Student s = studentManager.findStudentByID(studentID);
         if (s == null) {
@@ -392,20 +319,12 @@ public class Lecturer extends User {
     }
 
     private AssessmentComponent requireComponent(String key) {
-<<<<<<< HEAD
         for (AssessmentComponent c : course.getAssessmentComponents()) {
-=======
-        for (AssessmentComponent c : module.getAssessmentComponents()) {
->>>>>>> origin/main
             if (c.getKey().equalsIgnoreCase(key)) {
                 return c;
             }
         }
-<<<<<<< HEAD
         throw new IllegalStateException("The course needs a '" + key
-=======
-        throw new IllegalStateException("The module needs a '" + key
->>>>>>> origin/main
                 + "' assessment first. Use addAssessment().");
     }
 
@@ -413,11 +332,7 @@ public class Lecturer extends User {
     // IndividualMarksManager only accepts 0-100 so we use whichever max is smaller.
     private double checkRange(String componentKey, double mark) {
         double max = 100.0;
-<<<<<<< HEAD
         for (AssessmentComponent c : course.getAssessmentComponents()) {
-=======
-        for (AssessmentComponent c : module.getAssessmentComponents()) {
->>>>>>> origin/main
             if (c.getKey().equalsIgnoreCase(componentKey.trim())) {
                 max = Math.min(c.getMaxMark(), 100.0);
                 break;
@@ -430,7 +345,6 @@ public class Lecturer extends User {
         return mark;
     }
 
-<<<<<<< HEAD
     // reads a number, throws a readable error if it isn't one
     private double readNumber(String prompt) {
         System.out.print(prompt);
@@ -468,16 +382,10 @@ public class Lecturer extends User {
         }
     }
 
-=======
->>>>>>> origin/main
     private String show(Double mark) {
         if (mark == null) {
             return "missing";
         }
         return String.format("%.1f", mark);
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main
