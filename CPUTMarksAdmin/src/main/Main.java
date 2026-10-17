@@ -8,6 +8,7 @@ package main;
 import java.util.ArrayList;
 import java.util.Scanner;
 import classes.*;
+import java.io.IOException;
 
 /**
  * Simple test that will run in terminal for the Marks Administration System.
@@ -16,7 +17,7 @@ public class Main {
 
     private static final Scanner input = new Scanner(System.in);
 
-    private static Module module;
+    private static Modules module;
     private static StudentManager studentManager;
     private static Database database;
     private static Lecturer lecturer;
@@ -54,19 +55,26 @@ public class Main {
 
     private static void setup() {
         try {
-            module = new Module("SDN260S", "Software Design 2");
+            module = new Modules("SDN260S", "Software Design 2");
 
             module.addComponent(new AssessmentComponent("test", "Test", 30, 100));
             module.addComponent(new AssessmentComponent("practical", "Practical", 30, 100));
             module.addComponent(new AssessmentComponent("exam", "Exam", 40, 100));
 
             studentManager = new StudentManager();
-            database = new Database("marks.csv", studentManager, module);
-            database.loadData();
-
+            database = new Database("src/data/marks.csv");
+            //loadData() function of database throws an IOException
+            try{
+            database.loadData(new AssessmentComponent("test", "Test", 30, 100),
+                  new AssessmentComponent("practical", "Practical", 30, 100),
+                  new AssessmentComponent("exam", "Exam", 40, 100));
+            }catch(IOException ex){
+            System.out.println("Trouble accessing file : " + ex.getMessage());
+            }
+            
             lecturer = new Lecturer("Lecturer", module, studentManager, database);
 
-            ArrayList<Module> modules = new ArrayList<>();
+            ArrayList<Modules> modules = new ArrayList<>();
             modules.add(module);
             headOfDepartment = new HeadOfDepartment("Head of Department", modules);
 
@@ -110,10 +118,12 @@ public class Main {
                     safeRun("Update Marks", () -> lecturer.updateMarks());
                     break;
                 case 6:
-                    safeRun("Import Class List", () -> lecturer.importMarks());
+                    safeRun("Import Class List", () -> lecturer.importMark());
                     break;
                 case 7:
-                    safeRun("Export Class List", () -> database.exportCSV());
+                    safeRun("Export Class List", () -> database.exportCSV(studentManager));
+                    //exportCSV takes information in studentmanager and populates a file with it
+                    //at the path destination
                     break;
                 case 8:
                     safeRun("View Student Marks", () -> lecturer.viewStudentMarks());
@@ -198,7 +208,7 @@ public class Main {
 
         studentManager.addStudent(student);
         module.addStudent(student);
-        database.saveData();
+        database.saveData(studentManager);
         System.out.println("Student added.");
     }
 
