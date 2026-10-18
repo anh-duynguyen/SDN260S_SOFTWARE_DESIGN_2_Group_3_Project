@@ -232,13 +232,7 @@ if (parent != null) {
         application to a location that the lecturer
         picks*/
 
-        public void exportCSV( StudentManager stm){
-            
-            Scanner sc = new Scanner(System.in);
-            
-            System.out.println("Enter a path: ");
-            Path path = Paths.get(sc.nextLine());
-            
+        public void exportCSV(StudentManager stm, Path path){
             List<String> lines = new ArrayList<>();
             lines.add("StudentID, Name, T1, Practical, FISA");
             

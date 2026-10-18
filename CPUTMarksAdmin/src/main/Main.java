@@ -5,10 +5,12 @@ package main;
  * @author Group 3
  */
 
-import java.util.ArrayList;
-import java.util.Scanner;
 import classes.*;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 /**
  * Simple test that will run in terminal for the Marks Administration System.
@@ -65,7 +67,9 @@ public class Main {
             database = new Database("src/data/marks.csv");
             //loadData() function of database throws an IOException
             try{
-            database.loadData(new AssessmentComponent("test", "Test", 30, 100),
+                //loadData returns a studentManager object that stores all existing info 
+                //on csv file. the returned object must be equal to the current object in use in the Main.java file
+            studentManager = database.loadData(new AssessmentComponent("test", "Test", 30, 100),
                   new AssessmentComponent("practical", "Practical", 30, 100),
                   new AssessmentComponent("exam", "Exam", 40, 100));
             }catch(IOException ex){
@@ -121,9 +125,10 @@ public class Main {
                     safeRun("Import Class List", () -> lecturer.importMarks());
                     break;
                 case 7:
-                    safeRun("Export Class List", () -> database.exportCSV(studentManager));
-                    //exportCSV takes information in studentmanager and populates a file with it
-                    //at the path destination
+                    safeRun("Export Class List", () -> {
+                        System.out.print("Enter a path: ");
+                        database.exportCSV(studentManager, Paths.get(input.nextLine().trim()));
+                    });
                     break;
                 case 8:
                     safeRun("View Student Marks", () -> lecturer.viewStudentMarks());
@@ -280,6 +285,8 @@ public class Main {
         System.out.print(prompt);
         try {
             return Integer.parseInt(input.nextLine().trim());
+        } catch (NoSuchElementException e) {
+            return 0;
         } catch (NumberFormatException e) {
             return -1;
         }
