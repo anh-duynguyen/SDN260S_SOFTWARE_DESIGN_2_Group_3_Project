@@ -42,9 +42,10 @@ public class IndividualMarksManager {
         }
 
         //calculates the contribution of each mark to the final mark
-        double testContribution = testMark * test.getWeight();
-        double practicalContribution = practicalMark * practical.getWeight();
-        double examContribution = examMark * exam.getWeight();
+
+        double testContribution = (testMark / test.getMaxMark()) * test.getWeight();
+        double practicalContribution = (practicalMark / practical.getMaxMark()) * practical.getWeight();
+        double examContribution = (examMark / exam.getMaxMark()) * exam.getWeight();
         //calculates the final mark by summing the contributions
         double finalMark = testContribution + practicalContribution + examContribution;
         return finalMark;   
