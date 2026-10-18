@@ -1,4 +1,4 @@
-package sdn260s_software_design_2_group_3_project;
+package classes;
 
 public class AssessmentComponent {
     
