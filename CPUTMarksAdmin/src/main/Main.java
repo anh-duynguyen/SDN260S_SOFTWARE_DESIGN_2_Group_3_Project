@@ -1,20 +1,20 @@
 package main;
 
-import classes.GUI;
+// THIS IMPORT IS REQUIRED FOR MAIN TO SEE THE GUI CLASS:
+import classes.CourseSessionCoordinator;
+import classes.GUI; 
 import javax.swing.SwingUtilities;
 
 /**
- * Starts the Marks Administration System. The screens live in classes/GUI.java,
- * so this file only has to open the window.
+ * Starts the Marks Administration System.
  */
 public class Main {
 
     public static void main(String[] args) {
-        // Swing windows should be built on the event dispatch thread, so I use
-        // invokeLater here instead of calling new GUI() straight from main.
-        // Doing it this way avoids odd freezing/painting bugs later on.
+        CourseSessionCoordinator sessionCoordinator = new CourseSessionCoordinator();
+
         SwingUtilities.invokeLater(() -> {
-            GUI window = new GUI();
+            GUI window = new GUI(sessionCoordinator);
             window.setVisible(true);
         });
     }

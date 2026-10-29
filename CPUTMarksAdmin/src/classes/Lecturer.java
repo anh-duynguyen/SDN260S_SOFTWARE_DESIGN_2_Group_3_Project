@@ -6,8 +6,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-// A lecturer can add assessments and students, capture/update/import mark and view a single student's marks.
-// Every method checks its input first and throws an exception with a message.
 public class Lecturer extends User {
 
     private final Course course;
@@ -25,12 +23,10 @@ public class Lecturer extends User {
         this.database = database;
     }
 
-    // same as above but without a database
     public Lecturer(String name, Course course, StudentManager studentManager) {
         this(name, course, studentManager, null);
     }
 
-    // lets Main share its Scanner so two Scanners don't fight over System.in
     public void setInput(Scanner input) {
         this.input = input;
     }
@@ -45,7 +41,6 @@ public class Lecturer extends User {
         return true;
     }
 
-    // adds a new assessment (key, label, weight in %, max mark)
     public void addAssessment(String key, String label, double weight, double maxMark) {
         if (key == null || key.trim().isEmpty()) {
             throw new IllegalArgumentException("Assessment key cannot be empty.");
@@ -57,77 +52,55 @@ public class Lecturer extends User {
             throw new IllegalArgumentException("Maximum mark must be greater than 0.");
         }
 
-        // check for duplicates and add up the weights
         double totalWeight = weight;
-        for (AssessmentComponent c : course.getAssessmentComponents()) {
+        for (AssessmentComponent c
+                : course.getAssessmentComponents()) {
             if (c.getKey().equalsIgnoreCase(key.trim())) {
                 throw new IllegalArgumentException("Assessment '" + key + "' already exists.");
             }
             totalWeight += c.getWeight();
         }
         if (totalWeight > 100) {
-            throw new IllegalArgumentException(
-                    "Total weight would be " + totalWeight + "%. It cannot exceed 100%.");
+            throw new IllegalArgumentException("Total weight would be " + totalWeight + "%. It cannot exceed 100%.");
         }
         course.addComponent(new AssessmentComponent(key.trim(), label, weight, maxMark));
     }
 
-    // add a student with no marks yet (all 3 count as missing)
     public void addStudent(String studentID, String studentName) {
         addStudent(studentID, studentName, null, null, null);
     }
 
-    // add a student with the marks we have so far (null = not available yet)
-    public void addStudent(String studentID, String studentName,
-            Double testMark, Double practicalMark, Double examMark) {
-        if (studentID == null || studentID.trim().isEmpty()
-                || studentName == null || studentName.trim().isEmpty()) {
+    public void addStudent(String studentID, String studentName, Double testMark, Double practicalMark, Double examMark) {
+        if (studentID == null || studentID.trim().isEmpty() || studentName == null || studentName.trim().isEmpty()) {
             throw new IllegalArgumentException("Student ID and name cannot be empty.");
         }
         if (studentManager.findStudentByID(studentID.trim()) != null) {
             throw new IllegalArgumentException("Student " + studentID + " already exists.");
         }
 
-        AssessmentComponent test = requireComponent("test");
-        AssessmentComponent practical = requireComponent("practical");
-        AssessmentComponent exam = requireComponent("exam");
+        AssessmentComponent test = requireComponent(course.getAssessmentComponents().get(0).getKey());
+        AssessmentComponent practical = requireComponent(course.getAssessmentComponents().get(1).getKey());
+        AssessmentComponent exam = requireComponent(course.getAssessmentComponents().get(2).getKey());
 
-        Double t = null;
-        Double p = null;
-        Double e = null;
-        if (testMark != null) {
-            t = checkRange("test", testMark);
-        }
-        if (practicalMark != null) {
-            p = checkRange("practical", practicalMark);
-        }
-        if (examMark != null) {
-            e = checkRange("exam", examMark);
-        }
+        Double t = (testMark != null) ? checkRange(test.getKey(), testMark) : null;
+        Double p = (practicalMark != null) ? checkRange(practical.getKey(), practicalMark) : null;
+        Double e = (examMark != null) ? checkRange(exam.getKey(), examMark) : null;
 
         Student s = new Student(studentName.trim(), studentID.trim(), t, p, e, test, practical, exam);
         studentManager.addStudent(s);
         course.addStudent(s);
     }
 
-    // capture marks for a student, null means leave that mark as it is
     public void addMarks(String studentID, Double testMark, Double practicalMark, Double examMark) {
         IndividualMarksManager marks = findStudent(studentID).getMarks();
 
-        // check everything before changing anything, so a bad mark
-        // doesn't leave the student half updated
-        Double t = null;
-        Double p = null;
-        Double e = null;
-        if (testMark != null) {
-            t = checkRange("test", testMark);
-        }
-        if (practicalMark != null) {
-            p = checkRange("practical", practicalMark);
-        }
-        if (examMark != null) {
-            e = checkRange("exam", examMark);
-        }
+        String testKey = course.getAssessmentComponents().get(0).getKey();
+        String pracKey = course.getAssessmentComponents().get(1).getKey();
+        String examKey = course.getAssessmentComponents().get(2).getKey();
+
+        Double t = (testMark != null) ? checkRange(testKey, testMark) : null;
+        Double p = (practicalMark != null) ? checkRange(pracKey, practicalMark) : null;
+        Double e = (examMark != null) ? checkRange(examKey, examMark) : null;
 
         if (t != null) {
             marks.setTestMark(t);
@@ -140,27 +113,21 @@ public class Lecturer extends User {
         }
     }
 
-    // change one mark (componentKey is test, practical or exam)
     public void updateMarks(String studentID, String componentKey, double newMark) {
         IndividualMarksManager marks = findStudent(studentID).getMarks();
         double valid = checkRange(componentKey, newMark);
-        switch (componentKey.trim().toLowerCase()) {
-            case "test":
-                marks.setTestMark(valid);
-                break;
-            case "practical":
-                marks.setPracticalMark(valid);
-                break;
-            case "exam":
-                marks.setExamMark(valid);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown component: " + componentKey);
+
+        if (componentKey.trim().equalsIgnoreCase(course.getAssessmentComponents().get(0).getKey())) {
+            marks.setTestMark(valid);
+        } else if (componentKey.trim().equalsIgnoreCase(course.getAssessmentComponents().get(1).getKey())) {
+            marks.setPracticalMark(valid);
+        } else if (componentKey.trim().equalsIgnoreCase(course.getAssessmentComponents().get(2).getKey())) {
+            marks.setExamMark(valid);
+        } else {
+            throw new IllegalArgumentException("Unknown evaluation component context structural key: " + componentKey);
         }
     }
 
-    // Imports students and marks from a CSV file (same format as Database.saveData).
-    // If any row is bad nothing gets changed.
     public int importMarks(String filePath) throws IOException {
         if (filePath == null || filePath.trim().isEmpty()) {
             throw new IllegalArgumentException("File path cannot be empty.");
@@ -169,29 +136,25 @@ public class Lecturer extends User {
             throw new IOException("File not found: " + filePath);
         }
 
-        AssessmentComponent test = requireComponent("test");
-        AssessmentComponent practical = requireComponent("practical");
-        AssessmentComponent exam = requireComponent("exam");
+        AssessmentComponent test = requireComponent(course.getAssessmentComponents().get(0).getKey());
+        AssessmentComponent practical = requireComponent(course.getAssessmentComponents().get(1).getKey());
+        AssessmentComponent exam = requireComponent(course.getAssessmentComponents().get(2).getKey());
 
-        // load the whole file first, nothing is changed until every row is fine
         StudentManager loaded;
         try {
             loaded = new Database(filePath.trim()).loadData(test, practical, exam);
         } catch (RuntimeException ex) {
-            throw new IllegalArgumentException("Import cancelled: a row in the file is invalid ("
-                    + ex.getClass().getSimpleName() + ": " + ex.getMessage()
-                    + "). No changes were made.");
+            throw new IllegalArgumentException("Import cancelled: an input row element is corrupted. No updates applied.");
         }
 
         int count = 0;
-        for (Student incoming : loaded.getStudents()) {
+        for (Student incoming
+                : loaded.getStudents()) {
             Student existing = studentManager.findStudentByID(incoming.getStudentID());
             if (existing == null) {
-                // new student
                 studentManager.addStudent(incoming);
                 course.addStudent(incoming);
             } else {
-                // already exists, only copy over the marks that are in the file
                 IndividualMarksManager from = incoming.getMarks();
                 IndividualMarksManager to = existing.getMarks();
                 if (from.getTestMark() != null) {
@@ -209,7 +172,6 @@ public class Lecturer extends User {
         return count;
     }
 
-    // printable breakdown of one student's marks
     public String viewStudentMarks(String studentID) {
         Student s = findStudent(studentID);
         IndividualMarksManager m = s.getMarks();
@@ -217,38 +179,34 @@ public class Lecturer extends User {
 
         StringBuilder sb = new StringBuilder();
         sb.append(s.getName()).append(" (").append(s.getStudentID()).append(")").append(nl);
-        sb.append("  Test:      ").append(show(m.getTestMark())).append(nl);
-        sb.append("  Practical: ").append(show(m.getPracticalMark())).append(nl);
-        sb.append("  Exam:      ").append(show(m.getExamMark())).append(nl);
+        sb.append("  ").append(course.getAssessmentComponents().get(0).getLabel()).append(": ").append(show(m.getTestMark())).append(nl);
+        sb.append("  ").append(course.getAssessmentComponents().get(1).getLabel()).append(": ").append(show(m.getPracticalMark())).append(nl);
+        sb.append("  ").append(course.getAssessmentComponents().get(2).getLabel()).append(": ").append(show(m.getExamMark())).append(nl);
 
         if (m.hasMissingMarks()) {
-            sb.append("  Final:     incomplete - missing: ")
+            sb.append("  Final summary: Incomplete evaluation record structure - missing: ")
                     .append(CollectiveMarksManager.describeMissing(s));
         } else {
             double fin = m.calculateFinalMark();
-            sb.append(String.format("  Final:     %.1f%% (%s)", fin,
-                    CollectiveMarksManager.letterGrade(fin)));
+            sb.append(String.format("  Final composite mark evaluation: %.1f%% (%s)", fin, CollectiveMarksManager.letterGrade(fin)));
         }
         return sb.toString();
     }
 
-    // students in this course who still have missing marks
     public ArrayList<Student> getStudentsWithMissingMarks() {
         CollectiveMarksManager cmm = new CollectiveMarksManager(course.getStudents());
         return cmm.getStudentsWithMissingMarks();
     }
 
-    // These read from the keyboard, call the checked methods above and print the result or the error message
     public void addAssessment() {
         try {
-            System.out.print("Assessment key (test, practical or exam): ");
+            System.out.print("Assessment structural descriptor label key: ");
             String key = input.nextLine().trim();
-            System.out.print("Label (e.g. Test 1): ");
+            System.out.print("Label name display context: ");
             String label = input.nextLine().trim();
-            double weight = readNumber("Weight (%): ");
-            double maxMark = readNumber("Maximum mark: ");
+            double weight = readNumber("Weight percentage metrics allocation (%): ");
+            double maxMark = readNumber("Maximum threshold: ");
             addAssessment(key, label, weight, maxMark);
-            System.out.println("Assessment added.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
@@ -256,15 +214,14 @@ public class Lecturer extends User {
 
     public void addMarks() {
         try {
-            System.out.print("Student number: ");
+            System.out.print("Student profile unique identifier matching reference number: ");
             String id = input.nextLine().trim();
-            findStudent(id); // stop early if the student doesn't exist
-            Double test = readOptionalMark("Test mark (blank to skip): ");
-            Double practical = readOptionalMark("Practical mark (blank to skip): ");
-            Double exam = readOptionalMark("Exam mark (blank to skip): ");
+            findStudent(id);
+            Double test = readOptionalMark("First evaluation category entry: ");
+            Double practical = readOptionalMark("Second evaluation category entry: ");
+            Double exam = readOptionalMark("Third evaluation category entry: ");
             addMarks(id, test, practical, exam);
             save();
-            System.out.println("Marks captured.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
@@ -272,28 +229,25 @@ public class Lecturer extends User {
 
     public void updateMarks() {
         try {
-            System.out.print("Student number: ");
+            System.out.print("Student context sequence: ");
             String id = input.nextLine().trim();
             findStudent(id);
-            System.out.print("Which mark (test, practical or exam): ");
+            System.out.print("Target subcategory key identifier code: ");
             String key = input.nextLine().trim();
-            double newMark = readNumber("New mark: ");
+            double newMark = readNumber("Updated numeric value assignment: ");
             updateMarks(id, key, newMark);
             save();
-            System.out.println("Mark updated.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    // asks for a CSV file, imports it and saves
     public void importMarks() {
         try {
-            System.out.print("CSV file to import: ");
+            System.out.print("Absolute system tracking location path target destination: ");
             String path = input.nextLine().trim();
             int count = importMarks(path);
             save();
-            System.out.println("Imported " + count + " row(s).");
         } catch (IOException | IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
@@ -301,7 +255,7 @@ public class Lecturer extends User {
 
     public void viewStudentMarks() {
         try {
-            System.out.print("Student number: ");
+            System.out.print("Student context verification parameter code: ");
             String id = input.nextLine().trim();
             System.out.println(viewStudentMarks(id));
         } catch (IllegalArgumentException e) {
@@ -309,54 +263,49 @@ public class Lecturer extends User {
         }
     }
 
-    // private methods
     private Student findStudent(String studentID) {
         Student s = studentManager.findStudentByID(studentID);
         if (s == null) {
-            throw new IllegalArgumentException("No student found with ID " + studentID);
+            throw new IllegalArgumentException("Registry missing error: No records tracked matching target ID sequence " + studentID);
         }
         return s;
     }
 
     private AssessmentComponent requireComponent(String key) {
-        for (AssessmentComponent c : course.getAssessmentComponents()) {
+        for (AssessmentComponent c
+                : course.getAssessmentComponents()) {
             if (c.getKey().equalsIgnoreCase(key)) {
                 return c;
             }
         }
-        throw new IllegalStateException("The course needs a '" + key
-                + "' assessment first. Use addAssessment().");
+        throw new IllegalStateException("Missing dependency parameter element structural context validation error matching layout for key descriptor: '" + key + "'");
     }
 
-    // checks a mark is between 0 and the max for that component.
-    // IndividualMarksManager only accepts 0-100 so we use whichever max is smaller.
     private double checkRange(String componentKey, double mark) {
         double max = 100.0;
-        for (AssessmentComponent c : course.getAssessmentComponents()) {
+        for (AssessmentComponent c
+                : course.getAssessmentComponents()) {
             if (c.getKey().equalsIgnoreCase(componentKey.trim())) {
                 max = Math.min(c.getMaxMark(), 100.0);
                 break;
             }
         }
         if (Double.isNaN(mark) || mark < 0 || mark > max) {
-            throw new IllegalArgumentException(
-                    "Mark for " + componentKey + " must be between 0 and " + max + ".");
+            throw new IllegalArgumentException("Boundary mismatch exception error: Assessment values for element field [" + componentKey + "] must register bounded strictly between 0 and " + max);
         }
         return mark;
     }
 
-    // reads a number, throws a readable error if it isn't one
     private double readNumber(String prompt) {
         System.out.print(prompt);
         String text = input.nextLine().trim();
         try {
             return Double.parseDouble(text);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Please enter a number.");
+            throw new IllegalArgumentException("Type Exception: Entered parameter input layout fail parsing to expected numbers.");
         }
     }
 
-    // same, but a blank answer means "no mark" (null)
     private Double readOptionalMark(String prompt) {
         System.out.print(prompt);
         String text = input.nextLine().trim();
@@ -366,11 +315,10 @@ public class Lecturer extends User {
         try {
             return Double.parseDouble(text);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Please enter a number or leave it blank.");
+            throw new IllegalArgumentException("Type Exception: Value mapping tracking constraints fail expected layout formatting.");
         }
     }
 
-    // writes the data to the file after a change (skipped if there is no database)
     private void save() {
         if (database == null) {
             return;
@@ -378,14 +326,11 @@ public class Lecturer extends User {
         try {
             database.saveData(studentManager);
         } catch (Exception e) {
-            System.out.println("Could not save to file: " + e.getMessage());
+            System.out.println("Persistent state serialization issue: " + e.getMessage());
         }
     }
 
     private String show(Double mark) {
-        if (mark == null) {
-            return "missing";
-        }
-        return String.format("%.1f", mark);
+        return (mark == null) ? "missing" : String.format("%.1f", mark);
     }
 }
