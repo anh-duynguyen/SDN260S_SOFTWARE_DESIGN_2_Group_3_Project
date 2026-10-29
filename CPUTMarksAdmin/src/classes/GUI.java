@@ -374,11 +374,8 @@ public class GUI extends JFrame {
         if (!file.getName().toLowerCase().endsWith(".csv")) {
             file = new File(file.getAbsolutePath() + ".csv");
         }
-<<<<<<< HEAD
         session.getCurrentDatabase().exportCSVSem(session.getCurrentStudentManager(), file.toPath());
-=======
-        session.getCurrentDatabase().exportCSV(session.getCurrentStudentManager(), file.toPath());
->>>>>>> f1c27b15770d3fa365b1a2b07b09a48929e662e6
+       
         JOptionPane.showMessageDialog(this, "Exported cleanly onto destination: " + file.getAbsolutePath());
     }
 
@@ -556,11 +553,8 @@ public class GUI extends JFrame {
 
     private void saveToFile() {
         if (session.getCurrentDatabase() != null) {
-<<<<<<< HEAD
             session.getCurrentDatabase().saveSemData(session.getCurrentStudentManager());
-=======
-            session.getCurrentDatabase().saveData(session.getCurrentStudentManager());
->>>>>>> f1c27b15770d3fa365b1a2b07b09a48929e662e6
+
         }
     }
 
