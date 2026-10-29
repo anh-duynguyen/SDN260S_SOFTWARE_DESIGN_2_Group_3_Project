@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 StudentID, Name, T1, T2, FISA, Final %, Grade, Status
 269272239,Leom,60.0,70.0,55.0,61.0,2-,Complete
 230867222,Kennedy,60.0,56.0,80.0,66.8,2-,Complete
+=======
+StudentID, Name, T1, Practical, FISA
+251163733,Duy Nguyen,71.0,80.0,74.0
+>>>>>>> f1c27b15770d3fa365b1a2b07b09a48929e662e6
