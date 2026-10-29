@@ -71,19 +71,32 @@ public class Database{
         this.fileName = fileName;
     }
     
-    /*saveData function will save every student's ID, name and marks to CSV file
+    /*saveSemData function will save every student's ID, name and marks to CSV file
     referenced by fileName. It will overwrite the file, creating a new updated version if it 
     already exists.*/
-    public void saveData(StudentManager studentManager){
+    public void saveSemData(StudentManager studentManager){
         
         List<String> lines = new ArrayList<>();//a one-dimensional array for rows
-        lines.add("StudentID, Name, T1, Practical, FISA");
+        lines.add("StudentID, Name, T1, T2, FISA, Final %, Grade, Status");
         //header row
         
         /*The for loop will run for every student, filling a row with 
         student information, joining them with commas and adding the row to file.*/
         for(Student student: studentManager.getStudents()){
             IndividualMarksManager marks = student.getMarks();//marks object gets student marks
+            
+            //Accomodation for additional marks
+                String finalMark = "--";
+                String symbol = "--";
+                String status = "Complete";
+                
+                if(marks.hasMissingMarks()){
+                    status = "Missing" + CollectiveMarksManager.describeMissing(student);
+                }else {
+                    double mark = marks.calculateFinalMark();
+                    finalMark = String.format("%.1f", mark);
+                    symbol = CollectiveMarksManager.letterGrade(mark);
+                }
             
             //String row joins student information and marks into a single row entry
             String row;
@@ -92,7 +105,10 @@ public class Database{
                     escapeCSV(student.getName()),
                     markToString(marks.getTestMark()),
                     markToString(marks.getPracticalMark()),
-                    markToString(marks.getExamMark())
+                    markToString(marks.getExamMark()),
+                    finalMark,
+                    symbol,
+                    status
             );
             lines.add(row);//adds row to file
         }
@@ -148,11 +164,11 @@ if (parent != null) {
         }
         
         /*
-        importCSV and exportCSV will be similar to the saveData and loadData
+        importCSV and exportCSVSem will be similar to the saveSemData and loadData
         functions, except they are built with the intention of having them interact
         with external files. They are there to handle files that the lecturers did not create
         inside the application. Because of this is best to assume that the layout of CSV files
-        wont be the same as what is determined by saveData and loadData. 
+        wont be the same as what is determined by saveSemData and loadData. 
         importCSV is meant to provide a path for when this occurs.
         it is meant to work around files that do not have the same structure and order of what is made 
         by the application.
@@ -228,16 +244,29 @@ if (parent != null) {
          }
          return stm;
 }
-        /*exportCSV function copies what is in the 
+        /*exportCSVSem function copies what is in the 
         application to a location that the lecturer
-        picks*/
+        picks. It only works for semester courses*/
 
-        public void exportCSV(StudentManager stm, Path path){
+        public void exportCSVSem(StudentManager stm, Path path){
             List<String> lines = new ArrayList<>();
-            lines.add("StudentID, Name, T1, Practical, FISA");
+            lines.add("StudentID, Name, T1, T2, FISA, Final %, Symbol, Status");
             
             for(Student student: stm.getStudents()){
                 IndividualMarksManager marks = student.getMarks();
+                
+                //Accomodation for additional marks
+                String finalMark = "--";
+                String symbol = "--";
+                String status = "Complete";
+                
+                if(marks.hasMissingMarks()){
+                    status = "Missing" + CollectiveMarksManager.describeMissing(student);
+                }else {
+                    double mark = marks.calculateFinalMark();
+                    finalMark = String.format("%.1f", mark);
+                    symbol = CollectiveMarksManager.letterGrade(mark);
+                }
                 
 
                 //String row joins student information and marks into a single row entry
@@ -247,7 +276,10 @@ if (parent != null) {
                     escapeCSV(student.getName()),
                     markToString(marks.getTestMark()),
                     markToString(marks.getPracticalMark()),
-                    markToString(marks.getExamMark())
+                    markToString(marks.getExamMark()),
+                    finalMark,
+                    symbol, 
+                    status
             );
             lines.add(row);//adds row to file
             }
@@ -263,4 +295,109 @@ if (parent != null) {
             System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
  }
+        /*The program must be able to accomodate for semester course. 
+        To increase the functionality of the program, measures must be taken to add 
+        functionality for year courses. I begin doing that with a function that copies savaSemData and exportCSVSem*/
+        
+        public void exportCSVYear(StudentManager stm, Path path){
+            List<String> lines = new ArrayList<>();
+            lines.add("StudentID, Name, T1, T2, FISA, Final %, Symbol, Status");
+            
+            for(Student student: stm.getStudents()){
+                IndividualMarksManager marks = student.getMarks();
+                
+                //Accomodation for additional marks
+                String finalMark = "--";
+                String symbol = "--";
+                String status = "Complete";
+                
+                if(marks.hasMissingMarks()){
+                    status = "Missing" + CollectiveMarksManager.describeMissing(student);
+                }else {
+                    double mark = marks.calculateFinalMark();
+                    finalMark = String.format("%.1f", mark);
+                    symbol = CollectiveMarksManager.letterGrade(mark);
+                }
+                
+
+                //String row joins student information and marks into a single row entry
+                //This a W.I.P function, not to be used until the adequate functions have been altered.
+                //There needs to be changes in the IndividualMarksManager class that has a function that also accomdates for a T3
+            String row;
+            row = String.join(",",
+                    escapeCSV(student.getStudentID()),
+                    escapeCSV(student.getName()),
+                    markToString(marks.getTestMark()),
+                    markToString(marks.getPracticalMark()),
+                    markToString(marks.getExamMark()),
+                    finalMark,
+                    symbol, 
+                    status
+            );
+            lines.add(row);//adds row to file
+            }
+            
+            try {
+            //exception to be declared in case of failure
+            Path parent = path.getParent();
+if (parent != null) {
+    Files.createDirectories(parent);
+}
+            Files.write(path, lines);
+        } catch (IOException ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        }
+        
+        /*This function is to be the groundwork for a function that will working with Year courses.
+        This is a W.I.P function. Many other functions need to be editted and changed to accomodate for year courses.
+        Until those changes are made, this function will remain her unused, along with exportCSVYear.*/
+        public void saveYearData(StudentManager studentManager){
+            List<String> lines = new ArrayList<>();//a one-dimensional array for rows
+        lines.add("StudentID, Name, T1, T2, FISA, Final %, Grade, Status");
+        //header row
+        
+        /*The for loop will run for every student, filling a row with 
+        student information, joining them with commas and adding the row to file.*/
+        for(Student student: studentManager.getStudents()){
+            IndividualMarksManager marks = student.getMarks();//marks object gets student marks
+            
+            //Accomodation for additional marks
+                String finalMark = "--";
+                String symbol = "--";
+                String status = "Complete";
+                
+                if(marks.hasMissingMarks()){
+                    status = "Missing" + CollectiveMarksManager.describeMissing(student);
+                }else {
+                    double mark = marks.calculateFinalMark();
+                    finalMark = String.format("%.1f", mark);
+                    symbol = CollectiveMarksManager.letterGrade(mark);
+                }
+            
+            //String row joins student information and marks into a single row entry
+            String row;
+            row = String.join(",",
+                    escapeCSV(student.getStudentID()),
+                    escapeCSV(student.getName()),
+                    markToString(marks.getTestMark()),
+                    markToString(marks.getPracticalMark()),
+                    markToString(marks.getExamMark()),
+                    finalMark,
+                    symbol,
+                    status
+            );
+            lines.add(row);//adds row to file
+        }
+        try {
+            //exception to be declared in case of failure
+            Path parent = Paths.get(fileName).getParent();
+if (parent != null) {
+    Files.createDirectories(parent);
+}
+            Files.write(Paths.get(fileName), lines);
+        } catch (IOException ex) {
+            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        }
 }
