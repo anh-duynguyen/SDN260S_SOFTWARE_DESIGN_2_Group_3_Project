@@ -1,6 +1,5 @@
 package main;
 
-// THIS IMPORT IS REQUIRED FOR MAIN TO SEE THE GUI CLASS:
 import classes.CourseSessionCoordinator;
 import classes.GUI; 
 import javax.swing.SwingUtilities;
