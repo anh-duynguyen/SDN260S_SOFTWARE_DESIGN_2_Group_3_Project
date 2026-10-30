@@ -2,7 +2,9 @@ package classes;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CourseSessionCoordinator {
 
@@ -30,7 +32,16 @@ public class CourseSessionCoordinator {
                 String filename = file.getName();
                 String courseCode = filename.substring(0, filename.toLowerCase().lastIndexOf("_marks.csv")).toUpperCase();
                 
-                Course reloadedCourse = new Course(courseCode, "Module Profile " + courseCode);
+                // Read embedded dynamic description metadata header safely
+                String courseName = "Module Profile " + courseCode; // Fallback default
+                try {
+                    List<String> lines = Files.readAllLines(file.toPath());
+                    if (!lines.isEmpty() && lines.get(0).startsWith("#CourseName:")) {
+                        courseName = lines.get(0).substring("#CourseName:".length()).trim();
+                    }
+                } catch (IOException ignored) {}
+                
+                Course reloadedCourse = new Course(courseCode, courseName);
                 reloadedCourse.addComponent(new AssessmentComponent("test", "Test", 30, 100));
                 reloadedCourse.addComponent(new AssessmentComponent("practical", "Practical", 30, 100));
                 reloadedCourse.addComponent(new AssessmentComponent("exam", "Exam", 40, 100));
@@ -38,7 +49,6 @@ public class CourseSessionCoordinator {
                 courses.add(reloadedCourse);
             }
         } else {
-            // Default configuration fallback
             Course defaultCourse = new Course("SDN260S", "Software Design 2");
             defaultCourse.addComponent(new AssessmentComponent("test", "Test", 30, 100));
             defaultCourse.addComponent(new AssessmentComponent("practical", "Practical", 30, 100));
@@ -46,10 +56,14 @@ public class CourseSessionCoordinator {
             courses.add(defaultCourse);
             
             try {
-                new File("src/data/SDN260S_marks.csv").createNewFile();
+                File firstFile = new File("src/data/SDN260S_marks.csv");
+                firstFile.getParentFile().mkdirs();
+                Files.write(firstFile.toPath(), List.of("#CourseName:Software Design 2", "StudentID, Name, T1, T2, FISA, Final %, Grade, Status"));
             } catch (IOException ignored) {}
         }
-        switchCourseContext(courses.get(0));
+        if (!courses.isEmpty()) {
+            switchCourseContext(courses.get(0));
+        }
     }
 
     public void switchCourseContext(Course targetCourse) {

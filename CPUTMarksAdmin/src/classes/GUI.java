@@ -13,23 +13,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-
 
 public class GUI extends JFrame {
 
@@ -48,11 +51,18 @@ public class GUI extends JFrame {
         this.session = session;
 
         setTitle("CPUT Marks Administration System");
+        setSize(1024, 768);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        this.hod = new HeadOfDepartment("Head of Department", session.getCourses());
+        // Preload data across all courses to build background records cleanly
+        Course originalActive = session.getCurrentCourse();
+        for (Course c : session.getCourses()) {
+            session.switchCourseContext(c);
+        }
+        session.switchCourseContext(originalActive);
 
+        this.hod = new HeadOfDepartment("Head of Department", session.getCourses());
         showLoginScreen();
     }
 
@@ -70,7 +80,7 @@ public class GUI extends JFrame {
         JButton hodButton = new JButton("Login as Head of Department");
 
         lecturerButton.addActionListener(e -> selectCourseAndLaunchLecturer());
-        hodButton.addActionListener(e -> showHodScreen());
+        hodButton.addActionListener(e -> showHodScreen()); // Direct transition: selection happens on the page itself
 
         center.add(title);
         center.add(lecturerButton);
@@ -207,8 +217,7 @@ public class GUI extends JFrame {
             return;
         }
 
-        for (Student s
-                : session.getCurrentCourse().getStudents()) {
+        for (Student s : session.getCurrentCourse().getStudents()) {
             IndividualMarksManager m = s.getMarks();
             String finalMark = "--", symbol = "--", status = "Complete";
 
@@ -327,23 +336,19 @@ public class GUI extends JFrame {
     }
 
     private void showMissingMarks() {
-        // Ensure <Student> generic type is explicitly declared here:
         ArrayList<Student> missing = lecturer.getStudentsWithMissingMarks();
-
         if (missing.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No student profile entries contain missing values.");
             return;
         }
-
         StringBuilder sb = new StringBuilder();
         for (Student s : missing) {
             sb.append(s.getStudentID()).append("  ").append(s.getName())
-              .append("  - missing items: ").append(CollectiveMarksManager.describeMissing(s))
-              .append("\n");
+                    .append("  - missing items: ").append(CollectiveMarksManager.describeMissing(s))
+                    .append("\n");
         }
         showText("Outstanding Core Components Queue", sb.toString());
     }
-
 
     private void showLecturerSummary() {
         CollectiveMarksManager cmm = new CollectiveMarksManager(session.getCurrentCourse().getStudents());
@@ -375,49 +380,88 @@ public class GUI extends JFrame {
             file = new File(file.getAbsolutePath() + ".csv");
         }
         session.getCurrentDatabase().exportCSVSem(session.getCurrentStudentManager(), file.toPath());
-       
         JOptionPane.showMessageDialog(this, "Exported cleanly onto destination: " + file.getAbsolutePath());
     }
 
+    /**
+     * REQUIREMENT REFACTORING: Modifies the Head of Department screen into a
+     * Split View layout. The left section hosts a clickable summary panel,
+     * updating the right-side report area instantly.
+     */
     private void showHodScreen() {
         currentUser = hod;
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        String courseText = (session.getCurrentCourse() != null) ? " | Selected Module: " + session.getCurrentCourse().getCode() : " | No Module Selected";
-        JLabel heading = new JLabel(currentUser.getRole() + " (Departmental Dashboard)" + courseText);
+        JLabel heading = new JLabel(currentUser.getRole() + " - Departmental Summary Explorer Dashboard");
         heading.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(heading, BorderLayout.NORTH);
+// --- NEW SELECTABLE SUMMARY SIDEBAR ---
+        DefaultListModel listModel = new DefaultListModel<>();
+        for (Course c : session.getCourses()) {
+            listModel.addElement(c.getCode() + " - " + c.getName());
+        }
+        JList courseSummaryList = new JList<>(listModel);
+        courseSummaryList.setFont(new Font("Arial", Font.PLAIN, 13));
+        courseSummaryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane listScrollPane = new JScrollPane(courseSummaryList);
+        listScrollPane.setPreferredSize(new Dimension(280, 0));
+        listScrollPane.setBorder(BorderFactory.createTitledBorder("Course Modules Summary List"));
+// Content Area (Right Panel)
         outputArea = new JTextArea();
         outputArea.setEditable(false);
         outputArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        JScrollPane outputScrollPane = new JScrollPane(outputArea);
+// Bind them into a Split Pane
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listScrollPane, outputScrollPane);
+        splitPane.setDividerLocation(290);
+        panel.add(splitPane, BorderLayout.CENTER);
+// Bottom Operations Bar
         JPanel buttons = new JPanel(new FlowLayout());
         JButton resultsButton = new JButton("Module Results");
         JButton summaryButton = new JButton("Class Summary");
-        JButton allButton = new JButton("All Modules Summary");
+        JButton allButton = new JButton("All Modules Matrix");
         JButton addCourseButton = new JButton("Create Course");
         JButton removeCourseButton = new JButton("Remove Course");
         JTextField idField = new JTextField(10);
         JButton studentButton = new JButton("Find Student");
         JButton backButton = new JButton("Log out");
+// Callback Action: Triggers live workspace switches when item is selected on the summary list
+        courseSummaryList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int idx = courseSummaryList.getSelectedIndex();
+                if (idx != -1) {
+                    Course selected = session.getCourses().get(idx);
+                    session.switchCourseContext(selected);
+                    outputArea.setText(hod.viewClassSummary(selected)); // Default output to class summary report
+                }
+            }
+        });
         resultsButton.addActionListener(e -> {
             if (session.getCurrentCourse() == null) {
-                showError("Please choose a course first via Lecturer login context.");
+                showError("Selection Required: Pick a course from the list.");
                 return;
             }
             outputArea.setText(hod.viewModuleResults(session.getCurrentCourse()));
         });
         summaryButton.addActionListener(e -> {
             if (session.getCurrentCourse() == null) {
-                showError("No course context active. Choose a course profile via Lecturer mode first.");
+                showError("Selection Required: Pick a course from the list.");
                 return;
             }
             outputArea.setText(hod.viewClassSummary(session.getCurrentCourse()));
         });
         allButton.addActionListener(e -> outputArea.setText(hod.viewAllModules(session.getCourses())));
-        addCourseButton.addActionListener(e -> handleAddCourseByHod());
-        removeCourseButton.addActionListener(e -> handleRemoveCourseByHod());
+        addCourseButton.addActionListener(e -> {
+            handleAddCourseByHod();
+            showHodScreen(); // Quick repaint reset to rebuild row components dynamically
+        });
+        removeCourseButton.addActionListener(e -> {
+            handleRemoveCourseByHod();
+            showHodScreen(); // Quick repaint reset
+        });
         studentButton.addActionListener(e -> {
             if (session.getCurrentCourse() == null) {
-                showError("No active validation course workspace target defined.");
+                showError("No active course context tracking selection.");
                 return;
             }
             try {
@@ -435,11 +479,23 @@ public class GUI extends JFrame {
         buttons.add(idField);
         buttons.add(studentButton);
         buttons.add(backButton);
-        panel.add(heading, BorderLayout.NORTH);
-        panel.add(new JScrollPane(outputArea), BorderLayout.CENTER);
         panel.add(buttons, BorderLayout.SOUTH);
         setScreen(panel);
-        outputArea.setText(hod.viewAllModules(session.getCourses()));
+// Match selection index highlight to active item or default list matrix row index 0
+        if (session.getCurrentCourse() != null) {
+            for (int i = 0;
+                    i < session.getCourses().size();
+                    i++) {
+                if (session.getCourses().get(i).getCode().equals(session.getCurrentCourse().getCode())) {
+                    courseSummaryList.setSelectedIndex(i);
+                    break;
+                }
+            }
+        } else if (!session.getCourses().isEmpty()) {
+            courseSummaryList.setSelectedIndex(0);
+        } else {
+            outputArea.setText(hod.viewAllModules(session.getCourses()));
+        }
     }
 
     private void handleAddCourseByHod() {
@@ -459,8 +515,7 @@ public class GUI extends JFrame {
                 showError("Validation Fault: Entries cannot be left blank.");
                 return;
             }
-            for (Course courseProfile
-                    : session.getCourses()) {
+            for (Course courseProfile : session.getCourses()) {
                 if (courseProfile.getCode().equalsIgnoreCase(cleanCode)) {
                     showError("Data Integrity Violation: Course Module code profile [" + cleanCode + "] is already mapped.");
                     return;
@@ -476,12 +531,15 @@ public class GUI extends JFrame {
             try {
                 preppedFile.getParentFile().mkdirs();
                 if (!preppedFile.exists()) {
-                    java.nio.file.Files.write(preppedFile.toPath(), java.util.List.of("StudentID, Name, T1, Practical, FISA"));
+                    java.nio.file.Files.write(preppedFile.toPath(), java.util.List.of(
+                            "#CourseName:" + cleanName,
+                            "StudentID, Name, T1, T2, FISA, Final %, Grade, Status"
+                    ));
                 }
             } catch (IOException ignored) {
             }
+            session.switchCourseContext(customCourse);
             JOptionPane.showMessageDialog(this, "Module operational registry mapping for [" + cleanCode + "] complete!");
-            outputArea.setText(hod.viewAllModules(session.getCourses()));
         }
     }
 
@@ -517,7 +575,6 @@ public class GUI extends JFrame {
                     session.switchCourseContext(session.getCourses().isEmpty() ? null : session.getCourses().get(0));
                 }
                 JOptionPane.showMessageDialog(this, "Module profile entry and its corresponding file completely removed.");
-                showHodScreen();
             }
         }
     }
@@ -554,7 +611,6 @@ public class GUI extends JFrame {
     private void saveToFile() {
         if (session.getCurrentDatabase() != null) {
             session.getCurrentDatabase().saveSemData(session.getCurrentStudentManager());
-
         }
     }
 
