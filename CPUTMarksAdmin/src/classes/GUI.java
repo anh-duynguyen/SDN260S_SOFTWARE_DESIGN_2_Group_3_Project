@@ -66,18 +66,19 @@ public class GUI extends JFrame {
         showLoginScreen();
     }
 
-    private void showLoginScreen() {
+        private void showLoginScreen() {
         JPanel panel = new JPanel(new BorderLayout(0, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 250, 30, 250));
 
         JLabel logoLabel = new JLabel(loadLogo(), SwingConstants.CENTER);
-        JPanel center = new JPanel(new GridLayout(6, 1, 10, 10));
+        
+        JPanel center = new JPanel(new GridLayout(6, 1, 5, 5));
 
         JLabel title = new JLabel("Marks Administration System", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 24));
 
-        JTextField usernameField = new JTextField();
-        JPasswordField passwordField = new JPasswordField();
+        JTextField usernameField = new JTextField(15);
+        JPasswordField passwordField = new JPasswordField(15);
         JButton loginButton = new JButton("Login");
 
         loginButton.addActionListener(e -> {
@@ -91,14 +92,26 @@ public class GUI extends JFrame {
                 showHodScreen();
             }
         });
-        passwordField.addActionListener(e -> loginButton.doClick()); // pressing Enter also logs in
+        passwordField.addActionListener(e -> loginButton.doClick());
+
+        JLabel userLabel = new JLabel("Username:", SwingConstants.CENTER);
+        JLabel passLabel = new JLabel("Password:", SwingConstants.CENTER);
+
+        JPanel userWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        userWrapper.add(usernameField);
+
+        JPanel passWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        passWrapper.add(passwordField);
+
+        JPanel buttonWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        buttonWrapper.add(loginButton);
 
         center.add(title);
-        center.add(new JLabel("Username:"));
-        center.add(usernameField);
-        center.add(new JLabel("Password:"));
-        center.add(passwordField);
-        center.add(loginButton);
+        center.add(userLabel);
+        center.add(userWrapper);
+        center.add(passLabel);
+        center.add(passWrapper);
+        center.add(buttonWrapper);
 
         panel.add(logoLabel, BorderLayout.NORTH);
         panel.add(center, BorderLayout.CENTER);
