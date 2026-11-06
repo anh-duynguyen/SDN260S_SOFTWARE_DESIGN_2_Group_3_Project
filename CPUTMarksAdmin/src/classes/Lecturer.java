@@ -324,7 +324,7 @@ public class Lecturer extends User {
             return;
         }
         try {
-            database.saveSemData(studentManager);
+            database.saveData(studentManager);
         } catch (Exception e) {
             System.out.println("Persistent state serialization issue: " + e.getMessage());
         }

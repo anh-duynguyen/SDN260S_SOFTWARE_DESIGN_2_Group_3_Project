@@ -11,7 +11,6 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -23,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -30,13 +30,13 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class GUI extends JFrame {
 
     private final CourseSessionCoordinator session;
+    private final PasswordSystem passwords = new PasswordSystem();
 
     private Lecturer lecturer;
     private HeadOfDepartment hod;
@@ -71,20 +71,34 @@ public class GUI extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 250, 30, 250));
 
         JLabel logoLabel = new JLabel(loadLogo(), SwingConstants.CENTER);
-        JPanel center = new JPanel(new GridLayout(4, 1, 10, 10));
+        JPanel center = new JPanel(new GridLayout(6, 1, 10, 10));
 
         JLabel title = new JLabel("Marks Administration System", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 24));
 
-        JButton lecturerButton = new JButton("Login as Lecturer");
-        JButton hodButton = new JButton("Login as Head of Department");
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JButton loginButton = new JButton("Login");
 
-        lecturerButton.addActionListener(e -> selectCourseAndLaunchLecturer());
-        hodButton.addActionListener(e -> showHodScreen()); // Direct transition: selection happens on the page itself
+        loginButton.addActionListener(e -> {
+            String role = passwords.checkLogin(usernameField.getText(), new String(passwordField.getPassword()));
+            if (role == null) {
+                showError("Incorrect username or password.");
+                passwordField.setText("");
+            } else if (role.equals("LECTURER")) {
+                selectCourseAndLaunchLecturer();
+            } else if (role.equals("HOD")) {
+                showHodScreen();
+            }
+        });
+        passwordField.addActionListener(e -> loginButton.doClick()); // pressing Enter also logs in
 
         center.add(title);
-        center.add(lecturerButton);
-        center.add(hodButton);
+        center.add(new JLabel("Username:"));
+        center.add(usernameField);
+        center.add(new JLabel("Password:"));
+        center.add(passwordField);
+        center.add(loginButton);
 
         panel.add(logoLabel, BorderLayout.NORTH);
         panel.add(center, BorderLayout.CENTER);
@@ -379,7 +393,7 @@ public class GUI extends JFrame {
         if (!file.getName().toLowerCase().endsWith(".csv")) {
             file = new File(file.getAbsolutePath() + ".csv");
         }
-        session.getCurrentDatabase().exportCSVSem(session.getCurrentStudentManager(), file.toPath());
+        session.getCurrentDatabase().exportCSV(session.getCurrentStudentManager(), file.toPath());
         JOptionPane.showMessageDialog(this, "Exported cleanly onto destination: " + file.getAbsolutePath());
     }
 
@@ -610,7 +624,7 @@ public class GUI extends JFrame {
 
     private void saveToFile() {
         if (session.getCurrentDatabase() != null) {
-            session.getCurrentDatabase().saveSemData(session.getCurrentStudentManager());
+            session.getCurrentDatabase().saveData(session.getCurrentStudentManager());
         }
     }
 

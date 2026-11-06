@@ -1,0 +1,2 @@
+hod,hod123,HOD
+lecturer,lecturer123,LECTURER

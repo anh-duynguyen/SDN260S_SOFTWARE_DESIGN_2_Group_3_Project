@@ -60,7 +60,7 @@ public class Database {
         this.fileName = fileName;
     }
 
-    public void saveSemData(StudentManager studentManager) {
+    public void saveData(StudentManager studentManager) {
         // Look up context name via active runtime tracks to embed inside file comments
         String actualCourseName = "Module Profile";
         File currentFile = new File(fileName);
@@ -142,63 +142,9 @@ public class Database {
         return studentManager;
     }
 
-    public StudentManager importCSV(Path path, AssessmentComponent test, AssessmentComponent practical, AssessmentComponent exam) throws IOException {
-        StudentManager stm = new StudentManager();
-        if (!Files.exists(path)) {
-            return stm;
-        }
+    
 
-        List<String> lines = Files.readAllLines(path);
-        if (lines.isEmpty()) {
-            return stm;
-        }
-
-        String[] hField = splitCSV(lines.get(0));
-        Map<String, Integer> column_idx = new HashMap<>();
-
-        for (int i = 0;
-                i < hField.length;
-                i++) {
-            String polishedName = hField[i].trim().toLowerCase();
-            column_idx.put(polishedName, i);
-        }
-
-        String[] requiredHeaders = {"studentid", "t1", "name", "practical", "fisa"};
-        for (String header
-                : requiredHeaders) {
-            if (!column_idx.containsKey(header)) {
-                throw new IOException("Required CSV header not found: " + header);
-            }
-        }
-
-        int IDCol = column_idx.get("studentid");
-        int testCol = column_idx.get("t1");
-        int nameCol = column_idx.get("name");
-        int pracCol = column_idx.get("practical");
-        int examCol = column_idx.get("fisa");
-
-        for (int i = 1;
-                i < lines.size();
-                i++) {
-            String line = lines.get(i);
-            if (line.isBlank() || line.trim().startsWith("#")) {
-                continue;
-            }
-
-            String[] fields = splitCSV(line);
-            String studentID = fields[IDCol];
-            String name = fields[nameCol];
-            Double tMark = stringToMark(fields[testCol]);
-            Double pMark = stringToMark(fields[pracCol]);
-            Double eMark = stringToMark(fields[examCol]);
-
-            Student student = new Student(name, studentID, tMark, pMark, eMark, test, practical, exam);
-            stm.addStudent(student);
-        }
-        return stm;
-    }
-
-    public void exportCSVSem(StudentManager stm, Path path) {
+    public void exportCSV(StudentManager stm, Path path) {
         List<String> lines = new ArrayList<>();
         lines.add("StudentID, Name, T1, T2, FISA, Final %, Symbol, Status");
 
@@ -241,85 +187,7 @@ public class Database {
         }
     }
 
-    public void exportCSVYear(StudentManager stm, Path path) {
-        List<String> lines = new ArrayList<>();
-        lines.add("StudentID, Name, T1, T2, FISA, Final %, Symbol, Status");
+    
 
-        for (Student student
-                : stm.getStudents()) {
-            IndividualMarksManager marks = student.getMarks();
-            String finalMark = "--";
-            String symbol = "--";
-            String status = "Complete";
-
-            if (marks.hasMissingMarks()) {
-                status = "Missing" + CollectiveMarksManager.describeMissing(student);
-            } else {
-                double mark = marks.calculateFinalMark();
-                finalMark = String.format("%.1f", mark);
-                symbol = CollectiveMarksManager.letterGrade(mark);
-            }
-
-            String row = String.join(",",
-                    escapeCSV(student.getStudentID()),
-                    escapeCSV(student.getName()),
-                    markToString(marks.getTestMark()),
-                    markToString(marks.getPracticalMark()),
-                    markToString(marks.getExamMark()),
-                    finalMark,
-                    symbol,
-                    status
-            );
-            lines.add(row);
-        }
-
-        try {
-            Path parent = path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Files.write(path, lines);
-        } catch (IOException ex) {
-            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-    }
-
-    public void saveYearData(StudentManager studentManager) {
-        List lines = new ArrayList<>();
-        lines.add("StudentID, Name, T1, T2, FISA, Final %, Grade, Status");
-        for (Student student
-                : studentManager.getStudents()) {
-            IndividualMarksManager marks = student.getMarks();
-            String finalMark = "--";
-            String symbol = "--";
-            String status = "Complete";
-            if (marks.hasMissingMarks()) {
-                status = "Missing" + CollectiveMarksManager.describeMissing(student);
-            } else {
-                double mark = marks.calculateFinalMark();
-                finalMark = String.format("%.1f", mark);
-                symbol = CollectiveMarksManager.letterGrade(mark);
-            }
-            String row = String.join(",",
-                    escapeCSV(student.getStudentID()),
-                    escapeCSV(student.getName()),
-                    markToString(marks.getTestMark()),
-                    markToString(marks.getPracticalMark()),
-                    markToString(marks.getExamMark()),
-                    finalMark,
-                    symbol,
-                    status
-            );
-            lines.add(row);
-        }
-        try {
-            Path parent = Paths.get(fileName).getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Files.write(Paths.get(fileName), lines);
-        } catch (IOException ex) {
-            System.getLogger(Database.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-    }
+    
 }
