@@ -1,4 +1,14 @@
-# SDN260S_SOFTWARE_DESIGN_2_Group_3_Project
+# Group 3 - SDN260S Software Design 2 Group Project
 CPUT Software Design 2 Group Project about a Marks Administration System in Java.
 
-The system allows lecturers to capture, import, and manage student marks. The system automatically calculates totals and final grades, supports CSV file uploads and exports, flags missing mark entries, and generates summary reports. Implementation involves role-based access control to ensure that lecturers and Heads of Department (HoD) have appropriate permissions within the system
+## Overview
+Marks Administration System for CPUT: a Java 17 / Swing desktop application that lets lecturers
+capture, import and export student marks (automatic weighted final mark, missing-mark flagging,
+class summaries) and lets a Head of Department inspect results read-only. Marks are stored as CSV
+files, one per course.
+
+## Authors
+Anh Duy Nguyen, Carl Leonard Lamprecht, Jaunne Alex Havenga, Keno Solomons,
+Gian Koekemoer, Peter Hlalubonga Ngesi, Pedro Josh Weir, Uthmaan Carelse
+
+**Examiner:** Mr. Stephen Ekwe
